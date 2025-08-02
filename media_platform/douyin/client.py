@@ -93,6 +93,9 @@ class DOUYINClient(AbstractApiClient):
 
     async def request(self, method, url, **kwargs):
         response = None
+        # 只在 self.proxies 为 dict 且有内容时才传递
+        if isinstance(self.proxies, dict) and self.proxies:
+            kwargs['proxies'] = self.proxies
         if method == "GET":
             response = requests.request(method, url, **kwargs)
         elif method == "POST":

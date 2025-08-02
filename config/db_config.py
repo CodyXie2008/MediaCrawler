@@ -10,13 +10,14 @@
 
 
 import os
+import pymysql
 
 # mysql config
-RELATION_DB_PWD = os.getenv("RELATION_DB_PWD", "123456")
+RELATION_DB_PWD = os.getenv("RELATION_DB_PWD", "root")
 RELATION_DB_USER = os.getenv("RELATION_DB_USER", "root")
 RELATION_DB_HOST = os.getenv("RELATION_DB_HOST", "localhost")
-RELATION_DB_PORT = os.getenv("RELATION_DB_PORT", 3306)
-RELATION_DB_NAME = os.getenv("RELATION_DB_NAME", "media_crawler")
+RELATION_DB_PORT = int(os.getenv("RELATION_DB_PORT", 3306))
+RELATION_DB_NAME = os.getenv("RELATION_DB_NAME", "media_crawler_db")
 
 
 # redis config
@@ -28,3 +29,17 @@ REDIS_DB_NUM = os.getenv("REDIS_DB_NUM", 0)  # your redis db num
 # cache type
 CACHE_TYPE_REDIS = "redis"
 CACHE_TYPE_MEMORY = "memory"
+
+def get_db_conn():
+    """
+    获取MySQL数据库连接，自动读取本文件中的配置参数。
+    用法：from config.db_config import get_db_conn; conn = get_db_conn()
+    """
+    return pymysql.connect(
+        host=RELATION_DB_HOST,
+        user=RELATION_DB_USER,
+        password=RELATION_DB_PWD,
+        port=RELATION_DB_PORT,
+        database=RELATION_DB_NAME,
+        charset='utf8mb4'
+    )
