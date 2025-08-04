@@ -96,7 +96,7 @@ ENABLE_GET_IMAGES = False
 ENABLE_GET_COMMENTS = True
 
 # 爬取一级评论的数量控制(单视频/帖子)
-CRAWLER_MAX_COMMENTS_COUNT_SINGLENOTES = 2000
+CRAWLER_MAX_COMMENTS_COUNT_SINGLENOTES = 20
 
 # 是否开启爬二级评论模式, 默认不开启爬二级评论
 # 老版本项目使用了 db, 则需参考 schema/tables.sql line 287 增加表字段
@@ -117,7 +117,7 @@ XHS_SPECIFIED_NOTE_URL_LIST = [
 
 # 指定抖音需要爬取的ID列表
 DY_SPECIFIED_ID_LIST = [
-    "7504685138773593371",
+    "7306437681045654834",
     # ........................
 ]
 
