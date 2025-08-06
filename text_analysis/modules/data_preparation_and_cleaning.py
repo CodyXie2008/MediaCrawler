@@ -600,7 +600,8 @@ def main():
         processor.analyze_filtering_effect(conn, df_raw, df_processed)
         
         # 保存结果
-        output_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'douyin_comments_processed.json')
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        output_file = os.path.join(project_root, 'data', 'processed', 'douyin_comments_processed.json')
         processor.save_processed_data(df_processed, output_file)
         
         print("\n✅ 数据准备、清洗与分析完成!")

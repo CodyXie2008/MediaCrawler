@@ -78,7 +78,7 @@ class LikeInteractionAnalyzer:
                 return None
             
             # 数据类型转换
-            df['like_count'] = pd.to_numeric(df['like_count'], errors='coerce').fillna(0)
+            df['like_count'] = pd.to_numeric(df['like_count'], errors='coerce').fillna(0).astype(int)
             df['create_time'] = pd.to_numeric(df['create_time'], errors='coerce')
             
             # 过滤无效数据
@@ -102,6 +102,11 @@ class LikeInteractionAnalyzer:
         """
         
         df = pd.read_sql_query(sql, conn)
+        
+        # 确保数据类型正确
+        df['like_count'] = pd.to_numeric(df['like_count'], errors='coerce').fillna(0).astype(int)
+        df['create_time'] = pd.to_numeric(df['create_time'], errors='coerce')
+        
         return df
     
     def analyze_like_distribution(self, df):
@@ -343,9 +348,17 @@ class LikeInteractionAnalyzer:
         
         return approval_signals
     
-    def create_visualizations(self, df, like_stats, like_ranges, opinion_leaders, approval_signals, output_dir='../data/visualizations'):
+    def create_visualizations(self, df, like_stats, like_ranges, opinion_leaders, approval_signals, output_dir=None):
         """创建可视化图表"""
         print(f"\n=== 创建可视化图表 ===")
+        
+        # 设置输出目录
+        if output_dir is None:
+            import sys
+            import os
+            # 直接使用项目根目录的data文件夹
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            output_dir = os.path.join(project_root, 'data', 'visualizations')
         
         # 确保输出目录存在
         os.makedirs(output_dir, exist_ok=True)
@@ -441,9 +454,23 @@ class LikeInteractionAnalyzer:
         
         return output_file
     
-    def generate_report(self, df, like_stats, like_ranges, opinion_leaders, approval_signals, output_dir='../data/reports'):
+    def generate_report(self, df, like_stats, like_ranges, opinion_leaders, approval_signals, output_dir=None):
         """生成分析报告"""
         print(f"\n=== 生成分析报告 ===")
+        
+        # 设置输出目录
+        if output_dir is None:
+            import sys
+            import os
+            # 直接使用项目根目录的data文件夹
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            output_dir = os.path.join(project_root, 'data', 'reports')
+            # 生成报告文件名
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = os.path.join(output_dir, f'like_analysis_report_like_analysis_{timestamp}.json')
+        else:
+            # 生成报告文件名
+            output_file = os.path.join(output_dir, 'like_interaction_analysis_report.json')
         
         # 确保输出目录存在
         os.makedirs(output_dir, exist_ok=True)
@@ -492,7 +519,6 @@ class LikeInteractionAnalyzer:
             report['key_findings'].append(f"最具影响力意见领袖: 点赞{top_leader['like_count']}, 跟随率{top_leader['follow_rate']:.1f}%")
         
         # 保存报告
-        output_file = os.path.join(output_dir, 'like_interaction_analysis_report.json')
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
         
@@ -536,7 +562,7 @@ def main():
         else:
             # 从清洗数据调取
             print("\n从清洗数据调取...")
-            cleaned_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'douyin_comments_processed.json')
+            cleaned_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'processed', 'douyin_comments_processed.json')
             df = analyzer.load_data(conn, use_cleaned_data=True, cleaned_data_path=cleaned_data_path)
         
         if df is None or df.empty:

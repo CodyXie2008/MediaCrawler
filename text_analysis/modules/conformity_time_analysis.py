@@ -346,9 +346,17 @@ class ConformityTimeAnalyzer:
         print("未检测到明显的密集回复时间段")
         return []
     
-    def create_visualizations(self, df, analysis_results, output_dir='../data/visualizations'):
+    def create_visualizations(self, df, analysis_results, output_dir=None):
         """创建时间分析可视化图表"""
         print(f"\n=== 创建可视化图表 ===")
+        
+        # 设置输出目录
+        if output_dir is None:
+            import sys
+            import os
+            # 直接使用项目根目录的data文件夹
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            output_dir = os.path.join(project_root, 'data', 'visualizations')
         
         # 确保输出目录存在
         os.makedirs(output_dir, exist_ok=True)
@@ -459,14 +467,28 @@ class ConformityTimeAnalyzer:
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         print(f"✅ 可视化图表已保存到: {output_file}")
         
-        # 显示图表
-        plt.show()
+        # 关闭图表避免显示问题
+        plt.close()
         
         return output_file
     
-    def generate_report(self, df, analysis_results, output_dir='../data/reports'):
+    def generate_report(self, df, analysis_results, output_dir=None):
         """生成时间分析报告"""
         print(f"\n=== 生成分析报告 ===")
+        
+        # 设置输出目录
+        if output_dir is None:
+            import sys
+            import os
+            # 直接使用项目根目录的data文件夹
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            output_dir = os.path.join(project_root, 'data', 'reports')
+            # 生成报告文件名
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_file = os.path.join(output_dir, f'time_analysis_report_time_analysis_{timestamp}.json')
+        else:
+            # 生成报告文件名
+            output_file = os.path.join(output_dir, 'conformity_time_analysis_report.json')
         
         # 确保输出目录存在
         os.makedirs(output_dir, exist_ok=True)
@@ -518,7 +540,6 @@ class ConformityTimeAnalyzer:
             report['key_findings'].append(f"主要从众时间窗口: {max_window[0]} ({int(max_window[1])} 条评论)")
         
         # 保存报告
-        output_file = os.path.join(output_dir, 'conformity_time_analysis_report.json')
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
         
@@ -562,7 +583,7 @@ def main():
         else:
             # 从清洗数据调取
             print("\n从清洗数据调取...")
-            cleaned_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'douyin_comments_processed.json')
+            cleaned_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'processed', 'douyin_comments_processed.json')
             df = analyzer.calculate_time_differences(conn, use_cleaned_data=True, cleaned_data_path=cleaned_data_path)
         
         if df.empty:

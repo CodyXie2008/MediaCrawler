@@ -1,254 +1,94 @@
-# MediaCrawler 文本分析模块使用指南
+# MediaCrawler 文本分析模块
 
-## 📋 模块概述
+## 📋 项目概述
 
-MediaCrawler文本分析模块提供了强大的社交媒体数据分析功能，包括数据清洗、从众心理分析、点赞互动分析等。本模块基于爬虫收集的原始数据，通过科学的数据分析方法，挖掘用户行为模式和社交心理特征。
-
-## 🗂️ 模块结构
-
-```
-text_analysis/
-├── README.md                           # 本文档
-├── data_preparation_and_cleaning.py    # 数据准备与清洗
-├── like_interaction_analysis.py        # 点赞互动分析
-├── conformity_time_analysis.py         # 从众心理时间分析
-├── 数据清洗算法规则详解.md              # 数据清洗文档
-├── 点赞互动分析算法文档.md              # 点赞分析文档
-└── 从众心理时间分析功能算法文档.md      # 从众心理分析文档
-```
+MediaCrawler 文本分析模块是一个专注于从众心理分析的综合性工具集，通过多维度分析（时间集中度、点赞互动、情感一致性、文本相似度）来识别和量化从众心理现象。
 
 ## 🚀 快速开始
 
-### 环境准备
-
-1. **激活虚拟环境**（推荐）
+### 情感分析
 ```bash
-# 在项目根目录
-.\venv\Scripts\Activate.ps1
+# 本地词典分析（默认）
+python core/run_sentiment.py --type local
+
+# 阿里云API分析
+python core/run_sentiment.py --type aliyun
 ```
 
-2. **安装依赖**
+### 时间分析
 ```bash
-pip install -r requirements.txt
+python modules/conformity_time_analysis.py
 ```
 
-3. **进入文本分析目录**
+### 数据清洗
 ```bash
-cd text_analysis
+python modules/data_preparation_and_cleaning.py
 ```
 
-### 运行顺序
+## 🎯 核心分析指标
 
-建议按以下顺序运行分析：
+| 指标 | 模块 | 说明 | 权重 |
+|------|------|------|------|
+| **时间集中度** | `conformity_time_analysis.py` | 评论时间分布集中程度 | 25% |
+| **点赞集中度** | `like_interaction_analysis.py` | 点赞数分布集中程度 | 25% |
+| **情感一致性** | `sentiment_analysis_simple.py` | 评论情感极性一致性 | 30% |
+| **文本相似度** | 待开发 | 评论文本相似度 | 20% |
 
-1. **数据准备与清洗** → 2. **点赞互动分析** → 3. **从众心理时间分析**
+## 📁 项目结构
 
-## 📊 功能模块详解
-
-### 1. 数据准备与清洗 (`data_preparation_and_cleaning.py`)
-
-**功能**：对原始爬虫数据进行清洗和预处理
-
-**主要特性**：
-- 垃圾评论过滤
-- 文本标准化处理
-- 数据质量检查
-- 停用词处理
-- 分词处理
-
-**使用方法**：
-```bash
-python data_preparation_and_cleaning.py
+```
+text_analysis/
+├── core/                           # 核心模块
+│   ├── run_sentiment.py           # 统一情感分析脚本
+│   ├── sentiment_analysis_simple.py # 情感分析核心模块
+│   ├── data_paths.py              # 路径管理配置
+│   └── README_scripts.md          # 脚本使用说明
+│
+├── modules/                        # 分析模块
+│   ├── conformity_time_analysis.py     # 时间集中度分析
+│   ├── like_interaction_analysis.py    # 点赞互动分析
+│   └── data_preparation_and_cleaning.py # 数据清洗模块
+│
+├── data/                          # 数据存储
+│   ├── raw/                       # 原始数据
+│   ├── processed/                 # 处理后数据
+│   ├── results/                   # 分析结果
+│   ├── reports/                   # 分析报告
+│   └── visualizations/            # 可视化图表
+│
+└── docs/                          # 详细文档
+    ├── README.md                  # 完整使用指南
+    ├── 情感分析算法文档.md        # 情感分析算法详解
+    ├── 从众心理时间分析功能算法文档.md # 时间分析算法
+    ├── 点赞互动分析算法文档.md    # 点赞分析算法
+    └── 数据清洗算法规则详解.md    # 数据清洗规则
 ```
 
-**输出**：
-- 清洗后的数据文件
-- 数据质量报告
-- 过滤效果统计
+## 📚 详细文档
 
-### 2. 点赞互动分析 (`like_interaction_analysis.py`)
+- **[完整使用指南](docs/README.md)** - 详细的项目说明和使用方法
+- [情感分析算法文档](docs/情感分析算法文档.md) - 情感分析算法详解
+- [从众心理时间分析功能算法文档](docs/从众心理时间分析功能算法文档.md) - 时间分析算法
+- [点赞互动分析算法文档](docs/点赞互动分析算法文档.md) - 点赞分析算法
+- [数据清洗算法规则详解](docs/数据清洗算法规则详解.md) - 数据清洗规则
 
-**功能**：分析用户点赞行为和社会认同信号
+## 🔧 环境要求
 
-**主要特性**：
-- 点赞分布分析
-- 意见领袖识别
-- 社会认同信号分析
-- 跟随速度计算
-- 可视化图表生成
+- Python 3.7+
+- 数据库连接（MySQL）
+- 阿里云API（如果使用阿里云分析器）
+- 依赖包：pandas、numpy、matplotlib、requests
 
-**使用方法**：
-```bash
-python like_interaction_analysis.py
-```
+## 📈 测试状态
 
-**输出**：
-- 点赞统计报告
-- 意见领袖列表
-- 社会认同分析结果
-- 可视化图表
+- ✅ 情感分析模块：通过
+- ✅ 时间分析模块：通过
+- ✅ 数据清洗模块：通过
+- ⚠️ 点赞分析模块：部分通过（数据格式问题待修复）
 
-### 3. 从众心理时间分析 (`conformity_time_analysis.py`)
+## 🚀 未来规划
 
-**功能**：分析用户从众心理的时间特征
-
-**主要特性**：
-- 时间序列分析
-- 从众行为识别
-- 群体效应分析
-- 时间窗口统计
-- 趋势分析
-
-**使用方法**：
-```bash
-python conformity_time_analysis.py
-```
-
-**输出**：
-- 时间序列分析报告
-- 从众行为统计
-- 群体效应分析结果
-- 时间趋势图表
-
-## ⚙️ 配置说明
-
-### 数据库配置
-
-确保 `config/db_config.py` 中的数据库连接配置正确：
-
-```python
-# 数据库连接参数
-DB_HOST = "localhost"
-DB_PORT = 3306
-DB_USER = "your_username"
-DB_PASSWORD = "your_password"
-DB_NAME = "your_database"
-```
-
-### 分析参数配置
-
-各分析模块支持自定义参数：
-
-```python
-# 点赞分析参数
-like_threshold = 20          # 点赞阈值
-follow_speed_threshold = 30  # 跟随速度阈值（分钟）
-
-# 时间分析参数
-time_window = 3600          # 时间窗口（秒）
-conformity_threshold = 0.6   # 从众阈值
-```
-
-## 📈 输出结果说明
-
-### 数据文件
-
-- **清洗数据**：`../data/cleaned_comments.json`
-- **分析结果**：`../data/analysis_results/`
-- **可视化图表**：`../data/visualizations/`
-- **分析报告**：`../data/reports/`
-
-### 报告内容
-
-1. **数据质量报告**
-   - 原始数据统计
-   - 清洗效果统计
-   - 数据分布分析
-
-2. **点赞互动报告**
-   - 点赞分布统计
-   - 意见领袖列表
-   - 社会认同信号分析
-
-3. **从众心理报告**
-   - 时间序列分析
-   - 从众行为统计
-   - 群体效应分析
-
-## 🔧 高级用法
-
-### 自定义分析参数
-
-```python
-# 修改分析参数
-analyzer = LikeInteractionAnalyzer()
-analyzer.like_thresholds = {
-    'low': 0,
-    'medium': 10,      # 自定义中等点赞阈值
-    'high': 50,        # 自定义高点赞阈值
-    'very_high': 200,  # 自定义很高点赞阈值
-    'viral': 1000      # 自定义病毒级阈值
-}
-```
-
-### 批量处理
-
-```python
-# 批量处理多个时间范围
-time_ranges = [
-    ('2024-01-01', '2024-01-31'),
-    ('2024-02-01', '2024-02-29'),
-    ('2024-03-01', '2024-03-31')
-]
-
-for start_date, end_date in time_ranges:
-    # 执行分析
-    pass
-```
-
-## 🐛 常见问题
-
-### 1. 数据库连接失败
-
-**问题**：`ModuleNotFoundError: No module named 'config'`
-
-**解决**：确保在正确的目录下运行，或添加路径：
-```python
-import sys
-sys.path.append('..')
-```
-
-### 2. 依赖包缺失
-
-**问题**：`ModuleNotFoundError: No module named 'numpy'`
-
-**解决**：安装缺失的依赖：
-```bash
-pip install numpy pandas matplotlib jieba
-```
-
-### 3. 数据文件不存在
-
-**问题**：`FileNotFoundError: No such file or directory`
-
-**解决**：确保先运行爬虫收集数据，或检查文件路径
-
-### 4. 内存不足
-
-**问题**：处理大量数据时内存不足
-
-**解决**：
-- 分批处理数据
-- 增加系统内存
-- 使用数据采样
-
-## 📝 使用建议
-
-1. **数据准备**：确保爬虫数据完整且格式正确
-2. **参数调优**：根据具体场景调整分析参数
-3. **结果验证**：结合业务场景验证分析结果
-4. **定期更新**：定期更新分析模型和参数
-
-## 🔗 相关文档
-
-- [数据清洗算法规则详解](./数据清洗算法规则详解.md)
-- [点赞互动分析算法文档](./点赞互动分析算法文档.md)
-- [从众心理时间分析功能算法文档](./从众心理时间分析功能算法文档.md)
-- [主项目README](../README.md)
-
-## 📞 技术支持
-
-如遇到问题，请参考：
-1. 本文档的常见问题部分
-2. 各模块的详细算法文档
-3. 项目主文档和配置说明 
+- [ ] 修复点赞分析模块数据格式问题
+- [ ] 实现文本相似度分析模块
+- [ ] 开发综合分析报告生成器
+- [ ] 添加数据质量监控机制 
