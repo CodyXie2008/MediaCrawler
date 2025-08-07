@@ -1,27 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-简化版情感分析模块
-只支持本地词典和阿里云NLP API
+优化版情感分析模块
+支持本地词典和阿里云API两种分析方式
+统一执行入口，支持视频ID分析
 """
 
-import sys
 import os
+import sys
 import re
 import json
 import time
-import requests
-import hashlib
-import hmac
-import base64
-from datetime import datetime, timedelta
-from typing import Dict, List, Union
+import argparse
 import logging
+from datetime import datetime
+from typing import Dict, List, Union, Optional
+import warnings
+warnings.filterwarnings('ignore')
 
 # 添加项目根目录到Python路径
-import os
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
+
+# 导入PROJECT_ROOT
+from text_analysis.core.data_paths import PROJECT_ROOT
 
 import pandas as pd
 import numpy as np
@@ -35,6 +37,13 @@ plt.rcParams['axes.unicode_minus'] = False
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# 加载环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    logger.warning("python-dotenv未安装，无法自动加载.env文件")
 
 class DictionaryAnalyzer:
     """本地词典情感分析器"""
@@ -171,13 +180,10 @@ class AliyunAnalyzer:
                 }
     
     def _analyze_with_sdk(self, text: str) -> Dict[str, Union[str, float]]:
-        """使用SDK分析（基于官方文档）"""
+        """使用SDK分析"""
         try:
-            import json
             from aliyunsdkcore.client import AcsClient
             from aliyunsdkcore.request import CommonRequest
-            from aliyunsdkcore.acs_exception.exceptions import ClientException
-            from aliyunsdkcore.acs_exception.exceptions import ServerException
             
             # 创建AcsClient实例
             client = AcsClient(
@@ -186,15 +192,11 @@ class AliyunAnalyzer:
                 self.region_id
             )
             
-            # 使用CommonRequest（官方推荐方式）
+            # 使用CommonRequest
             request = CommonRequest()
-            
-            # 设置固定参数（官方文档要求）
             request.set_domain('alinlp.cn-hangzhou.aliyuncs.com')
             request.set_version('2020-06-29')
             request.set_action_name('GetSaChGeneral')
-            
-            # 设置API参数
             request.add_query_param('ServiceCode', 'alinlp')
             request.add_query_param('Text', text)
             
@@ -205,12 +207,17 @@ class AliyunAnalyzer:
             return self._parse_response(result)
             
         except ImportError:
-            raise Exception("阿里云SDK未安装")
+            raise Exception("阿里云SDK未安装，请运行: pip install aliyun-python-sdk-core")
         except Exception as e:
             raise e
     
     def _analyze_with_http(self, text: str) -> Dict[str, Union[str, float]]:
         """使用HTTP请求分析"""
+        import requests
+        import hashlib
+        import hmac
+        import base64
+        
         params = {
             'Action': 'SentimentAnalysis',
             'Version': '2018-04-08',
@@ -251,10 +258,9 @@ class AliyunAnalyzer:
     def _parse_response(self, result: Dict) -> Dict[str, Union[str, float]]:
         """解析响应"""
         try:
-            # 解析Data字段（可能是JSON字符串）
+            # 解析Data字段
             data_str = result.get('Data', '{}')
             if isinstance(data_str, str):
-                import json
                 data = json.loads(data_str)
             else:
                 data = data_str
@@ -268,14 +274,9 @@ class AliyunAnalyzer:
             
             # 映射情感
             sentiment_map = {
-                'positive': 'positive',
-                'negative': 'negative',
-                'neutral': 'neutral',
-                '正向': 'positive',
-                '负向': 'negative',
-                '中性': 'neutral',
-                '正面': 'positive',
-                '负面': 'negative',
+                'positive': 'positive', 'negative': 'negative', 'neutral': 'neutral',
+                '正向': 'positive', '负向': 'negative', '中性': 'neutral',
+                '正面': 'positive', '负面': 'negative',
             }
             
             sentiment = sentiment_map.get(sentiment_zh.lower(), 'neutral')
@@ -303,12 +304,12 @@ class AliyunAnalyzer:
         except Exception as e:
             raise e
 
-class SentimentManager:
-    """情感分析管理器"""
+class SentimentAnalyzer:
+    """统一情感分析器"""
     
     def __init__(self, analyzer_type: str = "dictionary"):
         """
-        初始化情感分析管理器
+        初始化情感分析器
         
         Args:
             analyzer_type: 分析器类型 ("dictionary" 或 "aliyun")
@@ -349,28 +350,44 @@ class SentimentManager:
                 'method': self.analyzer_type
             }
     
-    def analyze_batch(self, texts: List[str]) -> List[Dict[str, Union[str, float]]]:
-        """批量分析文本"""
-        results = []
-        for text in texts:
-            result = self.analyze_text(text)
-            results.append(result)
-        return results
-    
-    def analyze_from_db(self, conn, limit: int = 100) -> pd.DataFrame:
-        """从数据库分析评论"""
+    def analyze_comments(self, conn, video_id: Optional[str] = None, limit: Optional[int] = None) -> pd.DataFrame:
+        """
+        分析评论数据
+        
+        Args:
+            conn: 数据库连接
+            video_id: 视频ID，如果为None则分析所有评论
+            limit: 限制分析数量，如果为None则分析所有评论
+        """
         print("=== 从数据库加载评论数据 ===")
         
-        sql = """
-        SELECT comment_id, content, create_time, like_count
-        FROM douyin_aweme_comment
-        WHERE content IS NOT NULL AND LENGTH(content) > 5
-        ORDER BY create_time DESC
-        LIMIT %s
-        """
+        if video_id:
+            # 分析指定视频的评论
+            sql = """
+            SELECT comment_id, content, create_time, like_count, aweme_id
+            FROM douyin_aweme_comment
+            WHERE content IS NOT NULL AND LENGTH(content) > 5 AND aweme_id = %s
+            ORDER BY create_time DESC
+            """
+            params = [video_id]
+            print(f"分析视频 {video_id} 的评论...")
+        else:
+            # 分析所有评论
+            sql = """
+            SELECT comment_id, content, create_time, like_count, aweme_id
+            FROM douyin_aweme_comment
+            WHERE content IS NOT NULL AND LENGTH(content) > 5
+            ORDER BY create_time DESC
+            """
+            params = []
+            print("分析所有评论...")
+        
+        if limit:
+            sql += f" LIMIT {limit}"
+            print(f"限制分析数量: {limit}")
         
         try:
-            df = pd.read_sql_query(sql, conn, params=[limit])
+            df = pd.read_sql_query(sql, conn, params=params)
             print(f"✅ 成功加载 {len(df)} 条评论")
             
             if df.empty:
@@ -384,7 +401,7 @@ class SentimentManager:
             confidences = []
             
             for idx, row in df.iterrows():
-                if idx % 50 == 0:
+                if idx % 50 == 0 and idx > 0:
                     print(f"正在分析第 {idx+1}/{len(df)} 条评论...")
                 
                 result = self.analyze_text(row['content'])
@@ -429,16 +446,24 @@ class SentimentManager:
             stats['avg_score'] = 0.0
         return stats
     
-    def save_results(self, df: pd.DataFrame, output_file: str):
+    def save_results(self, df: pd.DataFrame, output_dir: str = None):
         """保存分析结果"""
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        if output_dir is None:
+            output_dir = os.path.join(PROJECT_ROOT, 'data', 'results')
+        
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 生成文件名
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        base_filename = f"sentiment_analysis_{self.analyzer_type}_{timestamp}"
         
         # 保存为CSV
-        csv_file = output_file.replace('.json', '.csv')
+        csv_file = os.path.join(output_dir, f"{base_filename}.csv")
         df.to_csv(csv_file, index=False, encoding='utf-8-sig')
         print(f"✅ 结果已保存到: {csv_file}")
         
         # 保存为JSON
+        json_file = os.path.join(output_dir, f"{base_filename}.json")
         results = {
             'analysis_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'analyzer_type': self.analyzer_type,
@@ -447,15 +472,20 @@ class SentimentManager:
             'data': df.to_dict('records')
         }
         
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
-        print(f"✅ 结果已保存到: {output_file}")
+        print(f"✅ 结果已保存到: {json_file}")
+        
+        return csv_file, json_file
     
-    def generate_report(self, df: pd.DataFrame, output_file: str):
+    def generate_report(self, df: pd.DataFrame, output_dir: str = None):
         """生成分析报告"""
         print("=== 生成分析报告 ===")
         
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        if output_dir is None:
+            output_dir = os.path.join(PROJECT_ROOT, 'data', 'reports')
+        
+        os.makedirs(output_dir, exist_ok=True)
         
         # 统计信息
         stats = self.get_stats()
@@ -478,10 +508,14 @@ class SentimentManager:
             'top_negative_comments': df[df['sentiment'] == 'negative'].nsmallest(5, 'sentiment_score')[['content', 'sentiment_score']].to_dict('records'),
         }
         
-        with open(output_file, 'w', encoding='utf-8') as f:
+        # 保存报告
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        report_file = os.path.join(output_dir, f"sentiment_analysis_report_{self.analyzer_type}_{timestamp}.json")
+        
+        with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 分析报告已保存到: {output_file}")
+        print(f"✅ 分析报告已保存到: {report_file}")
         
         # 打印报告摘要
         print("\n=== 分析报告摘要 ===")
@@ -493,20 +527,16 @@ class SentimentManager:
         print(f"中性评论: {report['summary']['neutral_count']:,} ({report['summary']['neutral_count']/report['summary']['total_comments']*100:.1f}%)")
         print(f"平均置信度: {report['summary']['avg_confidence']:.3f}")
         print(f"平均情感分数: {report['summary']['avg_score']:.3f}")
+        
+        return report_file
     
     def create_visualizations(self, df: pd.DataFrame, output_dir: str = None):
         """创建可视化图表"""
         print("=== 创建可视化图表 ===")
         
-        # 设置输出目录
         if output_dir is None:
-            import sys
-            import os
-            # 直接使用项目根目录的data文件夹
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            output_dir = os.path.join(project_root, 'data', 'visualizations')
+            output_dir = os.path.join(PROJECT_ROOT, 'data', 'visualizations')
         
-        # 确保目录存在
         os.makedirs(output_dir, exist_ok=True)
         
         # 创建图表
@@ -531,7 +561,7 @@ class SentimentManager:
         
         # 3. 置信度分布
         ax3 = axes[1, 0]
-        ax3.hist(df['sentiment_confidence'], bins=20, alpha=0.7, color='lightgreen', edgecolor='black')
+        ax3.hist(df['confidence'], bins=20, alpha=0.7, color='lightgreen', edgecolor='black')
         ax3.set_xlabel('置信度')
         ax3.set_ylabel('频次')
         ax3.set_title('置信度分布')
@@ -539,7 +569,7 @@ class SentimentManager:
         
         # 4. 情感分数vs置信度散点图
         ax4 = axes[1, 1]
-        scatter = ax4.scatter(df['sentiment_score'], df['sentiment_confidence'], 
+        scatter = ax4.scatter(df['sentiment_score'], df['confidence'], 
                             c=df['sentiment_score'], cmap='RdYlGn', alpha=0.6)
         ax4.set_xlabel('情感分数')
         ax4.set_ylabel('置信度')
@@ -550,77 +580,140 @@ class SentimentManager:
         plt.tight_layout()
         
         # 保存图表
-        output_file = os.path.join(output_dir, 'sentiment_analysis_visualization.png')
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        output_file = os.path.join(output_dir, f'sentiment_analysis_visualization_{self.analyzer_type}_{timestamp}.png')
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         print(f"✅ 可视化图表已保存到: {output_file}")
         
         # 显示图表
         plt.show()
+        
+        return output_file
 
 def main():
     """主函数"""
-    print("=== 简化版情感分析模块 ===")
+    parser = argparse.ArgumentParser(description="优化版情感分析工具")
+    parser.add_argument('--type', choices=['local', 'aliyun'], 
+                       default='local', help='分析器类型：local(本地词典) 或 aliyun(阿里云API)')
+    parser.add_argument('--video-id', type=str, help='视频ID，如果不指定则分析所有评论')
+    parser.add_argument('--limit', type=int, help='限制分析数量')
+    parser.add_argument('--use-cleaned-data', action='store_true', help='使用清洗后的数据文件')
+    parser.add_argument('--cleaned-data-path', type=str, help='清洗数据文件路径')
+    parser.add_argument('--test', action='store_true', help='测试模式，只分析少量数据')
     
-    # 选择分析器类型
-    print("\n请选择情感分析器类型:")
-    print("1. 本地词典分析")
-    print("2. 阿里云NLP API")
+    args = parser.parse_args()
     
-    choice = input("请输入选择 (1-2，默认1): ").strip()
+    # 测试模式设置
+    if args.test:
+        if not args.limit:
+            args.limit = 10
+        print("🧪 测试模式：只分析少量数据")
     
-    if choice == "2":
-        analyzer_type = "aliyun"
-        print("使用阿里云NLP API进行分析")
-    else:
-        analyzer_type = "dictionary"
-        print("使用本地词典进行分析")
+    # 显示配置信息
+    print("=== 优化版情感分析工具 ===")
+    print(f"分析器类型: {args.type}")
+    if args.video_id:
+        print(f"视频ID: {args.video_id}")
+    if args.limit:
+        print(f"限制数量: {args.limit}")
+    if args.use_cleaned_data:
+        print("使用清洗数据")
+    print("=" * 30)
     
-    # 创建分析管理器
+    # 检查阿里云API配置
+    if args.type == 'aliyun':
+        access_key_id = os.getenv('NLP_AK_ENV')
+        access_key_secret = os.getenv('NLP_SK_ENV')
+        if not access_key_id or not access_key_secret:
+            print("❌ 阿里云API密钥未配置")
+            print("请设置环境变量：")
+            print("  - NLP_AK_ENV: 阿里云AccessKey ID")
+            print("  - NLP_SK_ENV: 阿里云AccessKey Secret")
+            print("  - NLP_REGION_ENV: 阿里云区域ID (可选，默认为cn-hangzhou)")
+            return
+        print("✅ 阿里云API环境变量已配置")
+    
+    # 创建分析器
     try:
-        manager = SentimentManager(analyzer_type)
-        print("✅ 情感分析管理器初始化成功")
+        # 映射参数类型
+        analyzer_type = "dictionary" if args.type == "local" else "aliyun"
+        analyzer = SentimentAnalyzer(analyzer_type)
+        print("✅ 情感分析器初始化成功")
     except Exception as e:
         print(f"❌ 初始化失败: {e}")
         return
     
-    # 连接数据库
-    try:
-        conn = get_db_conn()
-        print("✅ 数据库连接成功")
-    except Exception as e:
-        print(f"❌ 数据库连接失败: {e}")
-        return
-    
-    try:
-        # 获取分析数量
+    # 加载数据
+    if args.use_cleaned_data:
+        # 从清洗数据文件加载
         try:
-            limit = input("请输入要分析的评论数量 (默认100): ").strip()
-            limit = int(limit) if limit.isdigit() else 100
-        except (EOFError, KeyboardInterrupt):
-            limit = 50  # 默认使用50条进行测试
-            print(f"使用默认数量: {limit}")
-        
-        # 分析评论
-        print(f"\n开始分析 {limit} 条评论...")
-        df = manager.analyze_from_db(conn, limit=limit)
-        
-        if df.empty:
-            print("❌ 没有找到评论数据")
+            if args.cleaned_data_path:
+                cleaned_data_path = args.cleaned_data_path
+            else:
+                cleaned_data_path = os.path.join(PROJECT_ROOT, 'data', 'processed', 'douyin_comments_processed.json')
+            
+            if not os.path.exists(cleaned_data_path):
+                print(f"❌ 清洗数据文件不存在: {cleaned_data_path}")
+                return
+            
+            with open(cleaned_data_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            df = pd.DataFrame(data)
+            print(f"✅ 成功加载清洗数据: {len(df)} 条记录")
+            
+            # 限制数据量
+            if args.limit and len(df) > args.limit:
+                df = df.head(args.limit)
+                print(f"✅ 限制数据量: {len(df)} 条记录")
+            
+        except Exception as e:
+            print(f"❌ 加载清洗数据失败: {e}")
+            return
+    else:
+        # 从数据库加载
+        try:
+            conn = get_db_conn()
+            print("✅ 数据库连接成功")
+        except Exception as e:
+            print(f"❌ 数据库连接失败: {e}")
             return
         
+        try:
+            # 分析评论
+            df = analyzer.analyze_comments(conn, args.video_id, args.limit)
+            
+            if df.empty:
+                print("❌ 没有找到评论数据")
+                return
+        except Exception as e:
+            print(f"❌ 从数据库加载数据失败: {e}")
+            return
+    
+    # 执行分析
+    try:
+        # 对数据进行情感分析
+        print("=== 开始情感分析 ===")
+        results = []
+        for idx, row in df.iterrows():
+            result = analyzer.analyze_text(row['content'])
+            results.append(result)
+        
+        # 将结果添加到DataFrame
+        df['sentiment'] = [r['sentiment'] for r in results]
+        df['sentiment_score'] = [r['score'] for r in results]
+        df['confidence'] = [r['confidence'] for r in results]
+        
+        print("✅ 情感分析完成")
+        
         # 保存结果
-        import sys
-        import os
-        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        from data_paths import PathManager
-        paths = PathManager.get_sentiment_analysis_paths()
-        manager.save_results(df, paths['results_json'])
+        analyzer.save_results(df)
         
         # 生成报告
-        manager.generate_report(df, paths['report'])
+        analyzer.generate_report(df)
         
         # 创建可视化
-        manager.create_visualizations(df)
+        analyzer.create_visualizations(df)
         
         print("\n✅ 情感分析完成!")
         
@@ -630,8 +723,9 @@ def main():
         traceback.print_exc()
     
     finally:
-        conn.close()
-        print("✅ 数据库连接已关闭")
+        if not args.use_cleaned_data and 'conn' in locals():
+            conn.close()
+            print("✅ 数据库连接已关闭")
 
 if __name__ == "__main__":
-    main() 
+    main()

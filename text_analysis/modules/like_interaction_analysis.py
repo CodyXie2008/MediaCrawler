@@ -12,9 +12,22 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-sys.path.append('..')
+import seaborn as sns
+from collections import defaultdict
+import warnings
+warnings.filterwarnings('ignore')
+# 添加项目根目录到Python路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
 
 from config.db_config import get_db_conn
+import sys
+import os
+# 添加项目根目录到Python路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+
+from text_analysis.core.data_paths import get_data_path
 
 # 设置中文字体
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei']
@@ -27,7 +40,7 @@ class LikeInteractionAnalyzer:
             'medium': 5,        # 中等点赞：5-19
             'high': 20,         # 高点赞：20-99
             'very_high': 100,   # 很高点赞：100-499
-            'viral': 500        # 病毒级：500+
+            'extreme': 500      # 极高点赞：500+
         }
         
         self.follow_speed_thresholds = {
@@ -42,23 +55,18 @@ class LikeInteractionAnalyzer:
         """加载数据"""
         print("=== 加载数据 ===")
         
-        if use_cleaned_data and cleaned_data_path:
-            # 从清洗数据加载
-            df = self.load_from_cleaned_data(cleaned_data_path)
+        if use_cleaned_data:
+            return self.load_from_cleaned_data(cleaned_data_path)
         else:
-            # 从数据库加载
-            df = self.load_from_database(conn)
-        
-        if df is None or df.empty:
-            print("❌ 没有找到有效数据")
-            return None
-        
-        print(f"✅ 成功加载数据: {len(df)} 条记录")
-        return df
+            return self.load_from_database(conn)
     
     def load_from_cleaned_data(self, cleaned_data_path):
         """从清洗数据文件加载"""
         try:
+            # 如果没有指定路径，使用默认路径
+            if cleaned_data_path is None:
+                cleaned_data_path = get_data_path('processed', 'douyin_comments_processed.json')
+            
             if not os.path.exists(cleaned_data_path):
                 print(f"❌ 清洗数据文件不存在: {cleaned_data_path}")
                 return None
@@ -562,7 +570,7 @@ def main():
         else:
             # 从清洗数据调取
             print("\n从清洗数据调取...")
-            cleaned_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'processed', 'douyin_comments_processed.json')
+            cleaned_data_path = get_data_path('processed', 'douyin_comments_processed.json')
             df = analyzer.load_data(conn, use_cleaned_data=True, cleaned_data_path=cleaned_data_path)
         
         if df is None or df.empty:

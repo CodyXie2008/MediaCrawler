@@ -5,16 +5,30 @@
 分析从众行为的时间窗口检测
 """
 
-import sys
 import os
+import sys
 import json
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-sys.path.append('..')
+import seaborn as sns
+from collections import defaultdict
+import warnings
+warnings.filterwarnings('ignore')
+
+# 添加项目根目录到Python路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
 
 from config.db_config import get_db_conn
+import sys
+import os
+# 添加项目根目录到Python路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
+
+from text_analysis.core.data_paths import get_data_path
 
 # 设置中文字体
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei']
@@ -25,12 +39,11 @@ class ConformityTimeAnalyzer:
         self.time_windows = {
             'immediate': (0, 5),      # 0-5分钟：立即从众
             'quick': (5, 30),         # 5-30分钟：快速从众
-            'medium': (30, 120),      # 30分钟-2小时：中等从众
-            'slow': (120, 1440),      # 2小时-24小时：缓慢从众
-            'delayed': (1440, 10080), # 1天-1周：延迟从众
-            'long_term': (10080, None) # 1周以上：长期从众
+            'normal': (30, 120),      # 30分钟-2小时：正常从众
+            'slow': (120, 1440),      # 2小时-24小时：慢速从众
+            'delayed': (1440, 10080)  # 1-7天：延迟从众
         }
-        
+    
     def calculate_time_differences(self, conn, aweme_id=None, use_cleaned_data=False, cleaned_data_path=None):
         """计算子评论与父评论的时间差
         
@@ -42,7 +55,7 @@ class ConformityTimeAnalyzer:
         """
         print("=== 计算时间差 ===")
         
-        if use_cleaned_data and cleaned_data_path:
+        if use_cleaned_data:
             # 从清洗数据调取
             print("从清洗数据调取时间信息...")
             df = self.load_from_cleaned_data(cleaned_data_path)
@@ -58,6 +71,10 @@ class ConformityTimeAnalyzer:
     def load_from_cleaned_data(self, cleaned_data_path):
         """从清洗数据文件加载数据"""
         try:
+            # 如果没有指定路径，使用默认路径
+            if cleaned_data_path is None:
+                cleaned_data_path = "data/processed/douyin_comments_processed.json"
+            
             # 检查文件是否存在
             if not os.path.exists(cleaned_data_path):
                 print(f"❌ 清洗数据文件不存在: {cleaned_data_path}")
@@ -87,8 +104,12 @@ class ConformityTimeAnalyzer:
             
             print(f"✅ 有效子评论数据: {len(df_filtered)} 条")
             
-            # 计算时间差
-            df_filtered = self.calculate_time_differences_from_data(df_filtered)
+            # 计算时间差（传递完整的原始数据以包含所有评论的时间映射）
+            df_filtered = self.calculate_time_differences_from_data(df_filtered, original_df=df)
+            
+            if df_filtered is None or len(df_filtered) == 0:
+                print("❌ 时间差计算失败或结果为空")
+                return None
             
             return df_filtered
             
@@ -165,24 +186,35 @@ class ConformityTimeAnalyzer:
         
         return df
     
-    def calculate_time_differences_from_data(self, df):
+    def calculate_time_differences_from_data(self, df, original_df=None):
         """从清洗数据计算时间差"""
         print("计算子评论与父评论的时间差...")
         
-        # 创建时间映射
-        time_map = df.set_index('comment_id')['create_time'].to_dict()
+        # 确保时间字段是数值类型
+        df['create_time'] = pd.to_numeric(df['create_time'], errors='coerce')
+        
+        # 使用原始数据创建时间映射（包含所有评论的ID）
+        if original_df is not None:
+            original_df['create_time'] = pd.to_numeric(original_df['create_time'], errors='coerce')
+            time_map = original_df.set_index(original_df['comment_id'].astype(str))['create_time'].to_dict()
+        else:
+            # 如果没有原始数据，使用当前数据
+            time_map = df.set_index(df['comment_id'].astype(str))['create_time'].to_dict()
         
         def get_time_diff(row):
             if pd.isna(row['parent_comment_id']) or row['parent_comment_id'] == '0':
                 return None
             
-            parent_time = time_map.get(row['parent_comment_id'])
-            if parent_time:
-                return row['create_time'] - parent_time
+            parent_id = str(row['parent_comment_id'])
+            parent_time = time_map.get(parent_id)
+            child_time = row['create_time']
+            
+            if parent_time is not None and child_time is not None:
+                time_diff_seconds = child_time - parent_time
+                return time_diff_seconds / 60  # 转换为分钟
             return None
         
-        df['time_diff_seconds'] = df.apply(get_time_diff, axis=1)
-        df['time_diff_minutes'] = df['time_diff_seconds'].apply(lambda x: x/60 if x is not None else None)
+        df['time_diff_minutes'] = df.apply(get_time_diff, axis=1)
         
         # 过滤无效的时间差（负值或异常值）
         df = df[df['time_diff_minutes'] >= 0]
@@ -467,8 +499,8 @@ class ConformityTimeAnalyzer:
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
         print(f"✅ 可视化图表已保存到: {output_file}")
         
-        # 关闭图表避免显示问题
-        plt.close()
+        # 显示图表
+        plt.show()
         
         return output_file
     
@@ -583,7 +615,7 @@ def main():
         else:
             # 从清洗数据调取
             print("\n从清洗数据调取...")
-            cleaned_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'processed', 'douyin_comments_processed.json')
+            cleaned_data_path = get_data_path('processed', 'douyin_comments_processed.json')
             df = analyzer.calculate_time_differences(conn, use_cleaned_data=True, cleaned_data_path=cleaned_data_path)
         
         if df.empty:
