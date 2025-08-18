@@ -11,6 +11,7 @@ import sys
 import re
 import json
 import time
+import threading
 import argparse
 import logging
 from datetime import datetime
@@ -23,7 +24,7 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 # 导入PROJECT_ROOT
-from text_analysis.core.data_paths import PROJECT_ROOT
+from text_analysis.core.data_paths import PROJECT_ROOT, resolve_latest_cleaned_data
 
 import pandas as pd
 import numpy as np
@@ -307,7 +308,8 @@ class AliyunAnalyzer:
 class SentimentAnalyzer:
     """统一情感分析器"""
     
-    def __init__(self, analyzer_type: str = "dictionary"):
+    def __init__(self, analyzer_type: str = "dictionary", video_id: Optional[str] = None,
+                 sa_concurrency: int = 8, sa_batch_size: int = 200, sa_throttle_ms: int = 0):
         """
         初始化情感分析器
         
@@ -315,6 +317,11 @@ class SentimentAnalyzer:
             analyzer_type: 分析器类型 ("dictionary" 或 "aliyun")
         """
         self.analyzer_type = analyzer_type
+        self.video_id = video_id
+        self.sa_concurrency = max(1, sa_concurrency)
+        self.sa_batch_size = max(1, sa_batch_size)
+        self.sa_throttle_ms = max(0, sa_throttle_ms)
+        self._stats_lock = threading.Lock()
         
         if analyzer_type == "dictionary":
             self.analyzer = DictionaryAnalyzer()
@@ -388,52 +395,96 @@ class SentimentAnalyzer:
         
         try:
             df = pd.read_sql_query(sql, conn, params=params)
-            print(f"✅ 成功加载 {len(df)} 条评论")
+            print(f"[OK] 成功加载 {len(df)} 条评论")
             
             if df.empty:
-                print("⚠️ 没有找到符合条件的评论")
+                print("[WARN] 没有找到符合条件的评论")
                 return df
             
-            # 进行情感分析
-            print("=== 开始情感分析 ===")
-            sentiments = []
-            scores = []
-            confidences = []
+            # 并发进行情感分析
+            print("=== 开始情感分析（并发） ===")
+            df = self.analyze_dataframe(df)
             
-            for idx, row in df.iterrows():
-                if idx % 50 == 0 and idx > 0:
-                    print(f"正在分析第 {idx+1}/{len(df)} 条评论...")
-                
-                result = self.analyze_text(row['content'])
-                sentiments.append(result['sentiment'])
-                scores.append(result['score'])
-                confidences.append(result['confidence'])
-            
-            # 添加结果到DataFrame
-            df['sentiment'] = sentiments
-            df['sentiment_score'] = scores
-            df['sentiment_confidence'] = confidences
-            
-            print("✅ 情感分析完成")
+            print("[OK] 情感分析完成")
             return df
             
         except Exception as e:
-            print(f"❌ 数据库分析失败: {e}")
+            print(f"[ERR] 数据库分析失败: {e}")
             return pd.DataFrame()
     
     def _update_stats(self, result: Dict[str, Union[str, float]]):
         """更新统计信息"""
-        self.stats['total_analyzed'] += 1
-        self.stats['total_confidence'] += result.get('confidence', 0.0)
-        self.stats['total_score'] += result.get('score', 0.0)
-        
-        sentiment = result.get('sentiment', 'neutral')
-        if sentiment == 'positive':
-            self.stats['positive_count'] += 1
-        elif sentiment == 'negative':
-            self.stats['negative_count'] += 1
-        else:
-            self.stats['neutral_count'] += 1
+        with self._stats_lock:
+            self.stats['total_analyzed'] += 1
+            self.stats['total_confidence'] += result.get('confidence', 0.0)
+            self.stats['total_score'] += result.get('score', 0.0)
+            sentiment = result.get('sentiment', 'neutral')
+            if sentiment == 'positive':
+                self.stats['positive_count'] += 1
+            elif sentiment == 'negative':
+                self.stats['negative_count'] += 1
+            else:
+                self.stats['neutral_count'] += 1
+
+    def _analyze_texts_concurrent(self, texts: List[str]) -> List[Dict[str, Union[str, float]]]:
+        """并发批量情感分析（去重+线程池）"""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        n = len(texts)
+        if n == 0:
+            return []
+
+        # 去重映射
+        unique_index: Dict[str, int] = {}
+        order_to_text: Dict[int, str] = {}
+        for i, t in enumerate(texts):
+            if t not in unique_index:
+                unique_index[t] = len(unique_index)
+            order_to_text[i] = t
+        unique_list: List[str] = [None] * len(unique_index)  # type: ignore
+        for t, u in unique_index.items():
+            unique_list[u] = t
+
+        unique_results: List[Dict[str, Union[str, float]]] = [None] * len(unique_list)  # type: ignore
+
+        def _process_range(start: int, end: int):
+            print(f"[RUN] 情感API {start+1}-{end}/{len(unique_list)}")
+            with ThreadPoolExecutor(max_workers=self.sa_concurrency) as ex:
+                futures = {}
+                for idx in range(start, end):
+                    # 可选节流（默认0=不限制）
+                    if self.sa_throttle_ms > 0 and (idx - start) % self.sa_concurrency == 0:
+                        time.sleep(self.sa_throttle_ms / 1000.0)
+                    futures[ex.submit(self.analyze_text, unique_list[idx])] = idx
+                for fut in as_completed(futures):
+                    uid = futures[fut]
+                    try:
+                        unique_results[uid] = fut.result()
+                    except Exception as e:
+                        unique_results[uid] = {
+                            'sentiment': 'neutral', 'score': 0.0, 'confidence': 0.0,
+                            'error': str(e), 'method': self.analyzer_type
+                        }
+
+        for i in range(0, len(unique_list), self.sa_batch_size):
+            _process_range(i, min(i + self.sa_batch_size, len(unique_list)))
+
+        # 回填结果
+        result_map: Dict[str, Dict[str, Union[str, float]]] = {
+            t: unique_results[u] for t, u in unique_index.items()
+        }
+        return [result_map[order_to_text[i]] for i in range(n)]
+
+    def analyze_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """对DataFrame的content列并发执行情感分析并填充结果列"""
+        if 'content' not in df.columns:
+            return df
+        texts = df['content'].astype(str).tolist()
+        results = self._analyze_texts_concurrent(texts)
+        df = df.copy()
+        df['sentiment'] = [r.get('sentiment', 'neutral') for r in results]
+        df['sentiment_score'] = [r.get('score', 0.0) for r in results]
+        df['sentiment_confidence'] = [r.get('confidence', 0.0) for r in results]
+        return df
     
     def get_stats(self) -> Dict:
         """获取统计信息"""
@@ -453,14 +504,17 @@ class SentimentAnalyzer:
         
         os.makedirs(output_dir, exist_ok=True)
         
-        # 生成文件名
+        # 生成文件名（results_sentiment_[videoId]_timestamp）
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        base_filename = f"sentiment_analysis_{self.analyzer_type}_{timestamp}"
+        if self.video_id:
+            base_filename = f"results_sentiment_{self.video_id}_{timestamp}"
+        else:
+            base_filename = f"results_sentiment_{timestamp}"
         
         # 保存为CSV
         csv_file = os.path.join(output_dir, f"{base_filename}.csv")
         df.to_csv(csv_file, index=False, encoding='utf-8-sig')
-        print(f"✅ 结果已保存到: {csv_file}")
+        print(f"[OK] 结果已保存到: {csv_file}")
         
         # 保存为JSON
         json_file = os.path.join(output_dir, f"{base_filename}.json")
@@ -474,7 +528,7 @@ class SentimentAnalyzer:
         
         with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
-        print(f"✅ 结果已保存到: {json_file}")
+        print(f"[OK] 结果已保存到: {json_file}")
         
         return csv_file, json_file
     
@@ -508,14 +562,17 @@ class SentimentAnalyzer:
             'top_negative_comments': df[df['sentiment'] == 'negative'].nsmallest(5, 'sentiment_score')[['content', 'sentiment_score']].to_dict('records'),
         }
         
-        # 保存报告
+        # 保存报告（reports_sentiment_[videoId]_timestamp.json）
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        report_file = os.path.join(output_dir, f"sentiment_analysis_report_{self.analyzer_type}_{timestamp}.json")
+        if self.video_id:
+            report_file = os.path.join(output_dir, f"reports_sentiment_{self.video_id}_{timestamp}.json")
+        else:
+            report_file = os.path.join(output_dir, f"reports_sentiment_{timestamp}.json")
         
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 分析报告已保存到: {report_file}")
+        print(f"[OK] 分析报告已保存到: {report_file}")
         
         # 打印报告摘要
         print("\n=== 分析报告摘要 ===")
@@ -545,48 +602,72 @@ class SentimentAnalyzer:
         
         # 1. 情感分布饼图
         ax1 = axes[0, 0]
-        sentiment_counts = df['sentiment'].value_counts()
-        colors = ['lightgreen', 'lightcoral', 'lightblue']
-        wedges, texts, autotexts = ax1.pie(sentiment_counts.values, labels=sentiment_counts.index, 
-                                          autopct='%1.1f%%', colors=colors, startangle=90)
-        ax1.set_title('情感分布')
+        if 'sentiment' in df.columns and not df['sentiment'].empty:
+            sentiment_counts = df['sentiment'].value_counts()
+            if sentiment_counts.sum() > 0:
+                colors = ['lightgreen', 'lightcoral', 'lightblue']
+                wedges, texts, autotexts = ax1.pie(sentiment_counts.values, labels=sentiment_counts.index,
+                                                  autopct='%1.1f%%', colors=colors, startangle=90)
+                ax1.set_title('情感分布')
+            else:
+                ax1.text(0.5, 0.5, '无情感分布数据', ha='center', va='center', transform=ax1.transAxes)
+                ax1.axis('off')
+        else:
+            ax1.text(0.5, 0.5, '无情感分布数据', ha='center', va='center', transform=ax1.transAxes)
+            ax1.axis('off')
         
         # 2. 情感分数分布直方图
         ax2 = axes[0, 1]
-        ax2.hist(df['sentiment_score'], bins=30, alpha=0.7, color='skyblue', edgecolor='black')
-        ax2.set_xlabel('情感分数')
-        ax2.set_ylabel('频次')
-        ax2.set_title('情感分数分布')
-        ax2.grid(True, alpha=0.3)
+        if 'sentiment_score' in df.columns and df['sentiment_score'].notna().any():
+            ax2.hist(df['sentiment_score'].dropna(), bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+            ax2.set_xlabel('情感分数')
+            ax2.set_ylabel('频次')
+            ax2.set_title('情感分数分布')
+            ax2.grid(True, alpha=0.3)
+        else:
+            ax2.text(0.5, 0.5, '无情感分数数据', ha='center', va='center', transform=ax2.transAxes)
+            ax2.axis('off')
         
         # 3. 置信度分布
         ax3 = axes[1, 0]
-        ax3.hist(df['confidence'], bins=20, alpha=0.7, color='lightgreen', edgecolor='black')
-        ax3.set_xlabel('置信度')
-        ax3.set_ylabel('频次')
-        ax3.set_title('置信度分布')
-        ax3.grid(True, alpha=0.3)
+        if 'confidence' in df.columns and df['confidence'].notna().any():
+            ax3.hist(df['confidence'].dropna(), bins=20, alpha=0.7, color='lightgreen', edgecolor='black')
+            ax3.set_xlabel('置信度')
+            ax3.set_ylabel('频次')
+            ax3.set_title('置信度分布')
+            ax3.grid(True, alpha=0.3)
+        else:
+            ax3.text(0.5, 0.5, '无置信度数据', ha='center', va='center', transform=ax3.transAxes)
+            ax3.axis('off')
         
         # 4. 情感分数vs置信度散点图
         ax4 = axes[1, 1]
-        scatter = ax4.scatter(df['sentiment_score'], df['confidence'], 
-                            c=df['sentiment_score'], cmap='RdYlGn', alpha=0.6)
-        ax4.set_xlabel('情感分数')
-        ax4.set_ylabel('置信度')
-        ax4.set_title('情感分数 vs 置信度')
-        ax4.grid(True, alpha=0.3)
-        plt.colorbar(scatter, ax=ax4)
+        if all(col in df.columns for col in ['sentiment_score', 'confidence']) and (
+            df['sentiment_score'].notna().any() and df['confidence'].notna().any()):
+            scatter = ax4.scatter(df['sentiment_score'], df['confidence'],
+                                  c=df['sentiment_score'], cmap='RdYlGn', alpha=0.6)
+            ax4.set_xlabel('情感分数')
+            ax4.set_ylabel('置信度')
+            ax4.set_title('情感分数 vs 置信度')
+            ax4.grid(True, alpha=0.3)
+            plt.colorbar(scatter, ax=ax4)
+        else:
+            ax4.text(0.5, 0.5, '无散点图数据', ha='center', va='center', transform=ax4.transAxes)
+            ax4.axis('off')
         
         plt.tight_layout()
         
-        # 保存图表
+        # 保存图表（visualizations_sentiment_[videoId]_timestamp.png）
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_file = os.path.join(output_dir, f'sentiment_analysis_visualization_{self.analyzer_type}_{timestamp}.png')
+        if self.video_id:
+            output_file = os.path.join(output_dir, f'visualizations_sentiment_{self.video_id}_{timestamp}.png')
+        else:
+            output_file = os.path.join(output_dir, f'visualizations_sentiment_{timestamp}.png')
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"✅ 可视化图表已保存到: {output_file}")
+        print(f"[OK] 可视化图表已保存到: {output_file}")
         
-        # 显示图表
-        plt.show()
+        # 关闭图表，不显示
+        plt.close()
         
         return output_file
 
@@ -600,6 +681,10 @@ def main():
     parser.add_argument('--use-cleaned-data', action='store_true', help='使用清洗后的数据文件')
     parser.add_argument('--cleaned-data-path', type=str, help='清洗数据文件路径')
     parser.add_argument('--test', action='store_true', help='测试模式，只分析少量数据')
+    # 并发参数（默认高并发，无限流）
+    parser.add_argument('--sa-concurrency', type=int, default=8, help='情感API并发数，默认8')
+    parser.add_argument('--sa-batch-size', type=int, default=200, help='情感API批大小，默认200')
+    parser.add_argument('--sa-throttle-ms', type=int, default=0, help='情感API节流毫秒，默认0=不限制')
     
     args = parser.parse_args()
     
@@ -607,7 +692,7 @@ def main():
     if args.test:
         if not args.limit:
             args.limit = 10
-        print("🧪 测试模式：只分析少量数据")
+        print("[TEST] 测试模式：只分析少量数据")
     
     # 显示配置信息
     print("=== 优化版情感分析工具 ===")
@@ -625,22 +710,28 @@ def main():
         access_key_id = os.getenv('NLP_AK_ENV')
         access_key_secret = os.getenv('NLP_SK_ENV')
         if not access_key_id or not access_key_secret:
-            print("❌ 阿里云API密钥未配置")
+            print("[ERR] 阿里云API密钥未配置")
             print("请设置环境变量：")
             print("  - NLP_AK_ENV: 阿里云AccessKey ID")
             print("  - NLP_SK_ENV: 阿里云AccessKey Secret")
             print("  - NLP_REGION_ENV: 阿里云区域ID (可选，默认为cn-hangzhou)")
             return
-        print("✅ 阿里云API环境变量已配置")
+        print("[OK] 阿里云API环境变量已配置")
     
     # 创建分析器
     try:
         # 映射参数类型
         analyzer_type = "dictionary" if args.type == "local" else "aliyun"
-        analyzer = SentimentAnalyzer(analyzer_type)
-        print("✅ 情感分析器初始化成功")
+        analyzer = SentimentAnalyzer(
+            analyzer_type,
+            video_id=args.video_id,
+            sa_concurrency=max(1, args.sa_concurrency),
+            sa_batch_size=max(1, args.sa_batch_size),
+            sa_throttle_ms=max(0, args.sa_throttle_ms),
+        )
+        print("[OK] 情感分析器初始化成功")
     except Exception as e:
-        print(f"❌ 初始化失败: {e}")
+        print(f"[ERR] 初始化失败: {e}")
         return
     
     # 加载数据
@@ -650,33 +741,34 @@ def main():
             if args.cleaned_data_path:
                 cleaned_data_path = args.cleaned_data_path
             else:
-                cleaned_data_path = os.path.join(PROJECT_ROOT, 'data', 'processed', 'douyin_comments_processed.json')
+                auto_path = resolve_latest_cleaned_data(args.video_id)
+                cleaned_data_path = auto_path or os.path.join(PROJECT_ROOT, 'data', 'processed', 'douyin_comments_processed.json')
             
             if not os.path.exists(cleaned_data_path):
-                print(f"❌ 清洗数据文件不存在: {cleaned_data_path}")
+                print(f"[ERR] 清洗数据文件不存在: {cleaned_data_path}")
                 return
             
             with open(cleaned_data_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             df = pd.DataFrame(data)
-            print(f"✅ 成功加载清洗数据: {len(df)} 条记录")
+            print(f"[OK] 成功加载清洗数据: {len(df)} 条记录")
             
             # 限制数据量
             if args.limit and len(df) > args.limit:
                 df = df.head(args.limit)
-                print(f"✅ 限制数据量: {len(df)} 条记录")
+                print(f"[OK] 限制数据量: {len(df)} 条记录")
             
         except Exception as e:
-            print(f"❌ 加载清洗数据失败: {e}")
+            print(f"[ERR] 加载清洗数据失败: {e}")
             return
     else:
         # 从数据库加载
         try:
             conn = get_db_conn()
-            print("✅ 数据库连接成功")
+            print("[OK] 数据库连接成功")
         except Exception as e:
-            print(f"❌ 数据库连接失败: {e}")
+            print(f"[ERR] 数据库连接失败: {e}")
             return
         
         try:
@@ -684,10 +776,10 @@ def main():
             df = analyzer.analyze_comments(conn, args.video_id, args.limit)
             
             if df.empty:
-                print("❌ 没有找到评论数据")
+                print("[ERR] 没有找到评论数据")
                 return
         except Exception as e:
-            print(f"❌ 从数据库加载数据失败: {e}")
+            print(f"[ERR] 从数据库加载数据失败: {e}")
             return
     
     # 执行分析
@@ -704,7 +796,7 @@ def main():
         df['sentiment_score'] = [r['score'] for r in results]
         df['confidence'] = [r['confidence'] for r in results]
         
-        print("✅ 情感分析完成")
+        print("[OK] 情感分析完成")
         
         # 保存结果
         analyzer.save_results(df)
@@ -715,17 +807,17 @@ def main():
         # 创建可视化
         analyzer.create_visualizations(df)
         
-        print("\n✅ 情感分析完成!")
+        print("\n[OK] 情感分析完成!")
         
     except Exception as e:
-        print(f"❌ 分析过程中出现错误: {e}")
+        print(f"[ERR] 分析过程中出现错误: {e}")
         import traceback
         traceback.print_exc()
     
     finally:
         if not args.use_cleaned_data and 'conn' in locals():
             conn.close()
-            print("✅ 数据库连接已关闭")
+            print("[OK] 数据库连接已关闭")
 
 if __name__ == "__main__":
     main()

@@ -1,137 +1,266 @@
-# MediaCrawler 文本分析模块
+# 文本分析模块 - 从众心理对网络暴力影响研究
 
-## 📋 项目概述
+## 项目概述
 
-MediaCrawler 文本分析模块是一个专注于从众心理分析的综合性工具集，通过多维度分析（时间集中度、点赞互动、情感一致性、文本相似度）来识别和量化从众心理现象。
+本项目基于网络评论数据，深入研究从众心理对网络暴力形成的影响因素。通过多维度文本分析技术，识别和分析网络评论中的从众行为模式，为理解网络暴力形成机制提供数据支撑和理论依据。
 
-## 📚 文档导航
+### 研究背景
+- **网络暴力现象**：社交媒体平台上的群体性攻击、恶意评论等现象日益严重
+- **从众心理作用**：个体在群体压力下容易产生从众行为，加剧网络暴力
+- **数据驱动分析**：基于大规模评论数据，量化分析从众心理的影响机制
 
-- **[📖 项目完整文档](README_项目完整文档.md)** - 完整的项目文档，包含概述、结构、功能、使用指南等（推荐）
-- **[📖 详细使用教程](docs/文本分析使用教程.md)** - 详细的使用指南和最佳实践
-- **[📋 项目概述](docs/README.md)** - 技术文档和算法详解
+### 研究目标
+1. **识别从众行为**：通过时间、情感、相似度等多维度分析识别从众评论
+2. **量化影响因子**：分析点赞、时间窗口、情感倾向等因素对从众行为的影响
+3. **预测暴力倾向**：建立模型预测评论的暴力倾向和传播风险
+4. **提供干预建议**：基于分析结果提出网络暴力预防和干预策略
 
-## 🚀 快速开始
-
-### 统一入口使用（推荐）
-```bash
-# 情感分析
-python text_analysis_unified.py sentiment --test
-python text_analysis_unified.py sentiment --video-id 123456 --type aliyun
-
-# 时间分析
-python text_analysis_unified.py time --test
-python text_analysis_unified.py time --video-id 123456 --limit 1000
-
-# 点赞分析
-python text_analysis_unified.py like --test
-python text_analysis_unified.py like --video-id 123456 --use-cleaned-data
-
-# 数据清洗
-python text_analysis_unified.py cleaning --test
-python text_analysis_unified.py cleaning --video-id 123456 --limit 5000
-```
-
-### 直接模块使用
-```bash
-# 情感分析
-python -m text_analysis.modules.sentiment_analyzer_optimized --test
-
-# 时间分析
-python -m text_analysis.modules.time_analysis_optimized --test
-
-# 点赞分析
-python -m text_analysis.modules.like_analysis_optimized --test
-
-# 数据清洗
-python -m text_analysis.modules.data_cleaning_optimized --test
-```
-
-## 🎯 核心分析指标
-
-| 指标 | 模块 | 说明 | 权重 |
-|------|------|------|------|
-| **时间集中度** | `time_analysis_optimized.py` | 评论时间分布集中程度 | 25% |
-| **点赞集中度** | `like_analysis_optimized.py` | 点赞数分布集中程度 | 25% |
-| **情感一致性** | `sentiment_analyzer_optimized.py` | 评论情感极性一致性 | 30% |
-| **文本相似度** | 待开发 | 评论文本相似度 | 20% |
-
-## 📁 项目结构
+## 项目结构
 
 ```
 text_analysis/
-├── text_analysis_unified.py           # 统一入口（推荐使用）
-├── modules/                           # 所有分析模块
-│   ├── __init__.py                    # 模块导入管理
-│   ├── sentiment_analyzer_optimized.py    # 优化版情感分析
-│   ├── time_analysis_optimized.py         # 优化版时间分析
-│   ├── like_analysis_optimized.py         # 优化版点赞分析
-│   ├── data_cleaning_optimized.py         # 优化版数据清洗
-│   ├── conformity_time_analysis.py        # 旧版时间分析（向后兼容）
-│   ├── like_interaction_analysis.py       # 旧版点赞分析（向后兼容）
-│   └── data_preparation_and_cleaning.py   # 旧版数据清洗（向后兼容）
-│
-├── core/                              # 核心功能
-│   ├── base_analyzer.py               # 基础分析器类
-│   ├── data_paths.py                  # 路径管理
-│   └── __init__.py
-│
-├── data/                              # 数据存储
-│   ├── raw/                           # 原始数据
-│   ├── processed/                     # 处理后数据
-│   ├── results/                       # 分析结果
-│   ├── reports/                       # 分析报告
-│   └── visualizations/                # 可视化图表
-│
-└── docs/                              # 详细文档
-    ├── README.md                      # 完整使用指南
-    ├── 情感分析算法文档.md            # 情感分析算法详解
-    ├── 从众心理时间分析功能算法文档.md # 时间分析算法
-    ├── 点赞互动分析算法文档.md        # 点赞分析算法
-    └── 数据清洗算法规则详解.md        # 数据清洗规则
+├── README.md                    # 项目说明文档
+├── text_analysis_unified.py     # 统一入口脚本
+├── utils.py                     # 工具函数
+├── env.example                  # 环境变量示例
+├── core/                        # 核心模块
+│   ├── __init__.py
+│   ├── base_analyzer.py         # 基础分析器
+│   └── data_paths.py           # 数据路径管理
+├── modules/                     # 分析模块
+│   ├── __init__.py
+│   ├── data_cleaning_optimized.py      # 数据清洗
+│   ├── time_analysis_optimized.py      # 时间分析
+│   ├── like_analysis_optimized.py      # 点赞分析
+│   ├── sentiment_analyzer_optimized.py # 情感分析
+│   └── similarity_analysis_optimized.py # 相似度分析
+└── docs/                        # 文档目录
+    ├── 从众心理分析-技术文档与CLI参数说明.md
+    └── 文本分析-统一使用与参数指南.md
 ```
 
-## 📚 详细文档
+## 功能模块
 
-- **[完整使用指南](docs/README.md)** - 详细的项目说明和使用方法
-- **[项目结构优化总结](README_项目结构优化.md)** - 最新的项目结构优化说明
-- **[优化总结](README_优化总结.md)** - 整体优化过程总结
-- [情感分析算法文档](docs/情感分析算法文档.md) - 情感分析算法详解
-- [从众心理时间分析功能算法文档](docs/从众心理时间分析功能算法文档.md) - 时间分析算法
-- [点赞互动分析算法文档](docs/点赞互动分析算法文档.md) - 点赞分析算法
-- [数据清洗算法规则详解](docs/数据清洗算法规则详解.md) - 数据清洗规则
+### 1. 数据清洗模块 (cleaning)
+**功能**：对原始评论数据进行预处理和清洗
+- **垃圾评论过滤**：移除广告、重复、无意义内容
+- **文本标准化**：统一格式、去除特殊字符
+- **数据去重**：基于内容和用户信息去重
+- **质量评估**：计算评论质量分数
 
-## 🔧 环境要求
+**输出**：
+- 清洗后的结构化数据
+- 清洗统计报告
+- 数据质量可视化
 
-- Python 3.7+
-- 数据库连接（MySQL）
-- 阿里云API（如果使用阿里云分析器）
-- 依赖包：pandas、numpy、matplotlib、requests、jieba
+### 2. 时间分析模块 (time)
+**功能**：分析评论时间分布和从众时间窗口
+- **时间差计算**：分析父子评论时间间隔
+- **时间窗口检测**：识别高密度评论时段
+- **从众窗口识别**：检测可能触发从众行为的时间窗口
+- **时间模式分析**：分析评论发布的时间规律
 
-## 📈 测试状态
+**输出**：
+- 时间分布统计
+- 从众窗口识别结果
+- 时间模式可视化图表
 
-- ✅ 情感分析模块：通过（支持本地词典和阿里云API）
-- ✅ 时间分析模块：通过（从众心理时间分析）
-- ✅ 点赞分析模块：通过（点赞互动分析）
-- ✅ 数据清洗模块：通过（数据预处理和清洗）
+### 3. 点赞分析模块 (like)
+**功能**：分析点赞行为和社会认同信号
+- **点赞分布分析**：统计点赞数量分布
+- **意见领袖识别**：基于点赞和回复速度识别关键用户
+- **社会认同分析**：分析点赞对从众行为的影响
+- **影响力评估**：评估用户评论的影响力
 
-## 🆕 最新优化
+**输出**：
+- 点赞分布统计
+- 意见领袖列表
+- 社会认同分析报告
 
-### 项目结构优化
-- **模块统一管理**：所有分析模块统一放置在 `modules/` 目录
-- **向后兼容**：保留旧版本模块，确保现有代码不受影响
-- **导入优化**：修复相对导入问题，使用绝对导入路径
-- **统一入口**：`text_analysis_unified.py` 提供统一的使用接口
+### 4. 情感分析模块 (sentiment)
+**功能**：分析评论情感倾向和情绪传播
+- **情感分类**：将评论分为正面、负面、中性
+- **情绪强度分析**：量化情感强度
+- **情绪传播分析**：分析负面情绪的传播模式
+- **暴力倾向识别**：识别具有暴力倾向的评论
 
-### 功能增强
-- **BaseAnalyzer基类**：为所有分析模块提供统一的基础功能
-- **路径管理优化**：支持带时间戳和视频ID的文件命名，防止覆盖
-- **参数化配置**：支持指定视频ID、数据源、分析类型等
-- **测试模式**：提供 `--test` 参数进行快速测试
+**支持方式**：
+- **本地词典**：基于情感词典的快速分析
+- **阿里云API**：高精度的云端情感分析
 
-## 🚀 未来规划
+**输出**：
+- 情感分布统计
+- 情绪传播分析
+- 暴力倾向评估报告
 
-- [ ] 实现文本相似度分析模块
-- [ ] 开发综合分析报告生成器
-- [ ] 添加数据质量监控机制
-- [ ] 优化算法性能和准确性
-- [ ] 添加更多可视化图表类型 
+### 5. 相似度分析模块 (similarity)
+**功能**：分析评论内容相似度和模仿行为
+- **文本向量化**：将文本转换为数值向量
+- **相似度计算**：使用余弦相似度计算文本相似性
+- **模仿评论识别**：识别内容相似的评论
+- **从众行为量化**：量化从众行为的程度
+
+**支持方式**：
+- **阿里云词向量**：高精度的语义向量化
+- **TF-IDF向量**：基于词频的本地向量化
+
+**输出**：
+- 相似度矩阵
+- 模仿评论列表
+- 从众行为量化报告
+
+## 技术特点
+
+### 1. 多维度分析
+- **时间维度**：分析评论发布的时间规律和从众窗口
+- **情感维度**：分析情感倾向和情绪传播
+- **内容维度**：分析文本相似度和模仿行为
+- **社交维度**：分析点赞、回复等社交信号
+
+### 2. 高性能处理
+- **并发处理**：支持多线程并发API调用
+- **批量处理**：批量处理大量评论数据
+- **缓存机制**：智能缓存减少重复计算
+- **内存优化**：优化大数据集的内存使用
+
+### 3. 灵活配置
+- **模块化设计**：各模块独立运行，支持组合使用
+- **参数可调**：支持调整分析参数和阈值
+- **多数据源**：支持数据库和文件数据源
+- **批量模式**：支持按视频ID批量处理
+
+### 4. 可视化输出
+- **统计图表**：生成直观的数据可视化
+- **分析报告**：详细的JSON格式分析报告
+- **结果导出**：支持CSV、JSON等多种格式
+
+## 安装和使用
+
+### 环境要求
+- Python 3.8+
+- MySQL数据库
+- 阿里云NLP服务（可选）
+
+### 安装步骤
+1. **激活虚拟环境**
+   ```bash
+   # Windows
+   venv\Scripts\activate
+   
+   # Linux/Mac
+   source venv/bin/activate
+   ```
+
+2. **安装依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **配置环境变量**
+   ```bash
+   cp env.example .env
+   # 编辑.env文件，填入数据库和API配置
+   ```
+
+### 基本使用
+
+#### 1. 统一入口使用
+```bash
+# 数据清洗
+python text_analysis/text_analysis_unified.py cleaning --video-id 7306437681045654834
+
+# 时间分析（使用清洗数据）
+python text_analysis/text_analysis_unified.py time --use-cleaned-data --video-id 7306437681045654834
+
+# 情感分析（阿里云API）
+python text_analysis/text_analysis_unified.py sentiment --type aliyun --video-id 7306437681045654834
+
+# 相似度分析（阿里云API）
+python text_analysis/text_analysis_unified.py similarity --video-id 7306437681045654834
+```
+
+#### 2. 批量处理模式
+```bash
+# 不指定video-id时，自动处理所有视频
+python text_analysis/text_analysis_unified.py cleaning
+python text_analysis/text_analysis_unified.py time --use-cleaned-data
+```
+
+#### 3. 性能优化参数
+```bash
+# 情感分析并发优化
+python text_analysis/text_analysis_unified.py sentiment \
+  --type aliyun \
+  --sa-concurrency 8 \
+  --sa-batch-size 100 \
+  --video-id 7306437681045654834
+
+# 相似度分析并发优化
+python text_analysis/text_analysis_unified.py similarity \
+  --vector-concurrency 8 \
+  --vector-batch-size 100 \
+  --video-id 7306437681045654834
+```
+
+## 输出文件说明
+
+### 文件命名规范
+- `processed_cleaning_{video_id}_{timestamp}.json` - 清洗后的数据
+- `results_{module}_{video_id}_{timestamp}.csv/json` - 分析结果
+- `reports_{module}_{video_id}_{timestamp}.json` - 分析报告
+- `visualizations_{module}_{video_id}_{timestamp}.png` - 可视化图表
+
+### 输出目录结构
+```
+data/
+├── processed/          # 清洗后的数据
+├── results/           # 分析结果
+├── reports/           # 分析报告
+└── visualizations/    # 可视化图表
+```
+
+## 研究应用
+
+### 1. 网络暴力预防
+- **早期预警**：识别可能引发网络暴力的事件和评论
+- **风险评估**：评估评论的暴力倾向和传播风险
+- **干预策略**：基于分析结果制定干预措施
+
+### 2. 平台治理
+- **内容审核**：辅助平台内容审核和违规检测
+- **用户管理**：识别恶意用户和意见领袖
+- **算法优化**：优化推荐算法，减少负面内容传播
+
+### 3. 学术研究
+- **行为模式**：研究网络从众行为的形成机制
+- **传播规律**：分析负面情绪的传播规律
+- **影响因素**：量化各种因素对从众行为的影响
+
+## 技术文档
+
+详细的技术文档和API说明请参考：
+- [从众心理分析-技术文档与CLI参数说明](docs/从众心理分析-技术文档与CLI参数说明.md)
+- [文本分析-统一使用与参数指南](docs/文本分析-统一使用与参数指南.md)
+- [项目完整文档](docs/README_项目完整文档.md)
+
+## 贡献指南
+
+欢迎提交Issue和Pull Request来改进项目：
+1. Fork项目
+2. 创建功能分支
+3. 提交更改
+4. 发起Pull Request
+
+## 许可证
+
+本项目采用MIT许可证，详见LICENSE文件。
+
+## 联系方式
+
+如有问题或建议，请通过以下方式联系：
+- 提交GitHub Issue
+- 发送邮件至项目维护者
+
+---
+
+*本项目致力于通过数据科学方法理解和预防网络暴力，为构建更健康的网络环境贡献力量。*

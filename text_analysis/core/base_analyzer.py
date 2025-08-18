@@ -22,7 +22,7 @@ sys.path.insert(0, project_root)
 import pandas as pd
 import matplotlib.pyplot as plt
 from config.db_config import get_db_conn
-from text_analysis.core.data_paths import AnalysisPathManager, PROJECT_ROOT
+from text_analysis.core.data_paths import AnalysisPathManager, PROJECT_ROOT, resolve_latest_cleaned_data
 
 # 使用PROJECT_ROOT作为项目根目录
 project_root = PROJECT_ROOT
@@ -92,8 +92,9 @@ class BaseAnalyzer:
         """从清洗数据文件加载数据"""
         try:
             if cleaned_data_path is None:
-                # 使用默认路径
-                cleaned_data_path = os.path.join(PROJECT_ROOT, 'data', 'processed', 'douyin_comments_processed.json')
+                # 优先解析最新的清洗数据（兼容新老命名）
+                auto_path = resolve_latest_cleaned_data(self.video_id)
+                cleaned_data_path = auto_path or os.path.join(PROJECT_ROOT, 'data', 'processed', 'douyin_comments_processed.json')
             
             if not os.path.exists(cleaned_data_path):
                 print(f"❌ 清洗数据文件不存在: {cleaned_data_path}")
@@ -103,6 +104,9 @@ class BaseAnalyzer:
                 data = json.load(f)
             
             df = pd.DataFrame(data)
+            # 如指定 video_id，则按 aweme_id 过滤
+            if self.video_id and 'aweme_id' in df.columns:
+                df = df[df['aweme_id'] == self.video_id]
             print(f"✅ 成功加载清洗数据: {len(df)} 条记录")
             return df
             
@@ -242,6 +246,19 @@ class BaseAnalyzer:
             end_time = datetime.now()
             results['duration'] = (end_time - start_time).total_seconds()
             
+            # 清洗模块额外打印摘要
+            if self.module_name == 'cleaning':
+                try:
+                    orig = results.get('original_stats', {})
+                    fin = results.get('final_stats', {})
+                    # 美化终端摘要输出
+                    print("\n┌────────── 清洗摘要 ──────────")
+                    print(f"│ 原始总评论: {orig.get('total_comments', 0):,}    父:{orig.get('parent_comments','?')}  子:{orig.get('child_comments','?')}")
+                    print(f"│ 清洗后总评论: {fin.get('total_comments', 0):,}  父:{fin.get('parent_comments','?')}  子:{fin.get('child_comments','?')}")
+                    print("└────────────────────────────")
+                except Exception:
+                    pass
+
             # 保存结果
             if save_results:
                 self.save_results(df, results)

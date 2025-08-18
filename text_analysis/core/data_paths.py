@@ -5,6 +5,7 @@
 
 import os
 from pathlib import Path
+from typing import Optional
 from datetime import datetime
 
 # 获取项目根目录 - 指向MediaCrawler项目根目录
@@ -67,10 +68,9 @@ class AnalysisPathManager:
         
     def get_results_paths(self) -> dict:
         """获取结果文件路径"""
-        base_name = f"{self.module_name}_analysis"
+        base_name = f"results_{self.module_name}"
         if self.video_id:
             base_name = f"{base_name}_{self.video_id}"
-        
         return {
             'csv': get_data_path('results', f"{base_name}_{self.timestamp}.csv"),
             'json': get_data_path('results', f"{base_name}_{self.timestamp}.json")
@@ -78,27 +78,70 @@ class AnalysisPathManager:
     
     def get_report_path(self) -> str:
         """获取报告文件路径"""
-        base_name = f"{self.module_name}_analysis_report"
+        base_name = f"reports_{self.module_name}"
         if self.video_id:
             base_name = f"{base_name}_{self.video_id}"
-        
         return get_data_path('reports', f"{base_name}_{self.timestamp}.json")
     
     def get_visualization_path(self, chart_type: str = "main") -> str:
         """获取可视化文件路径"""
-        base_name = f"{self.module_name}_analysis_{chart_type}"
+        base_name = f"visualizations_{self.module_name}"
         if self.video_id:
             base_name = f"{base_name}_{self.video_id}"
-        
         return get_data_path('visualizations', f"{base_name}_{self.timestamp}.png")
     
     def get_cleaned_data_path(self) -> str:
         """获取清洗数据文件路径"""
-        base_name = "cleaned_data"
+        base_name = "processed_cleaning"
         if self.video_id:
             base_name = f"{base_name}_{self.video_id}"
-        
         return get_data_path('processed', f"{base_name}_{self.timestamp}.json")
+
+
+def resolve_latest_cleaned_data(video_id: Optional[str] = None) -> Optional[str]:
+    """解析并返回最新的清洗数据文件路径。
+
+    优先顺序：
+    1) processed_cleaning_{video_id}_*.json（按修改时间倒序）
+    2) processed_cleaning_*.json（按修改时间倒序）
+    3) douyin_comments_processed_{video_id}.json（兼容别名）
+    4) douyin_comments_processed.json（全局别名）
+
+    Returns: 绝对路径字符串或 None
+    """
+    processed_dir: Path = DATA_DIRS['processed']
+
+    # 1) video_id 定向匹配
+    if video_id:
+        candidates = sorted(
+            processed_dir.glob(f"processed_cleaning_{video_id}_*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        if candidates:
+            return str(candidates[0])
+
+    # 2) 全局最新 cleaned_data_*.json
+    candidates = sorted(
+        processed_dir.glob("processed_cleaning_*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    if candidates:
+        return str(candidates[0])
+
+    # 3) 兼容别名（带 video_id）
+    if video_id:
+        alias_with_id = processed_dir / f"douyin_comments_processed_{video_id}.json"
+        if alias_with_id.exists():
+            return str(alias_with_id)
+
+    # 4) 全局别名
+    alias_global = processed_dir / "douyin_comments_processed.json"
+    if alias_global.exists():
+        return str(alias_global)
+
+    return None
 
 # 模块特定的路径生成函数（保持向后兼容）
 class PathManager:

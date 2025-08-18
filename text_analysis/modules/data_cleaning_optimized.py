@@ -21,6 +21,7 @@ sys.path.insert(0, project_root)
 
 import pandas as pd
 import jieba
+import logging
 import matplotlib.pyplot as plt
 import sys
 import os
@@ -29,6 +30,12 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 from text_analysis.core.base_analyzer import BaseAnalyzer, create_parser, parse_common_args
+
+# 抑制jieba调试日志
+try:
+    jieba.setLogLevel(logging.WARNING)
+except Exception:
+    logging.getLogger('jieba').setLevel(logging.WARNING)
 
 # 设置中文字体
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei']
@@ -195,6 +202,14 @@ class DataCleaningAnalyzer(BaseAnalyzer):
             'avg_likes': float(df['like_count'].mean()),
             'avg_sub_comments': float(df['sub_comment_count'].mean())
         }
+        try:
+            # 父子评论统计（基于 parent_comment_id 是否为 0/空）
+            parent_mask = df['parent_comment_id'].isna() | (df['parent_comment_id'] == '0') | (df['parent_comment_id'] == 0)
+            child_mask = ~(parent_mask)
+            original_stats['parent_comments'] = int(parent_mask.sum())
+            original_stats['child_comments'] = int(child_mask.sum())
+        except Exception:
+            pass
         
         # 1. 数据质量检查
         print("1. 数据质量检查...")
@@ -235,6 +250,13 @@ class DataCleaningAnalyzer(BaseAnalyzer):
             'avg_sub_comments': float(df_processed['sub_comment_count'].mean()),
             'avg_word_count': float(df_processed['word_count'].mean())
         }
+        try:
+            parent_mask_p = df_processed['parent_comment_id'].isna() | (df_processed['parent_comment_id'] == '0') | (df_processed['parent_comment_id'] == 0)
+            child_mask_p = ~(parent_mask_p)
+            final_stats['parent_comments'] = int(parent_mask_p.sum())
+            final_stats['child_comments'] = int(child_mask_p.sum())
+        except Exception:
+            pass
         
         return {
             'original_stats': original_stats,
@@ -329,60 +351,106 @@ class DataCleaningAnalyzer(BaseAnalyzer):
     
     def _create_charts(self, df: pd.DataFrame, results: Dict, output_path: str):
         """创建数据清洗可视化图表"""
-        fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-        fig.suptitle('数据清洗分析结果', fontsize=16, fontweight='bold')
+        try:
+            fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+            fig.suptitle('数据清洗分析结果', fontsize=16, fontweight='bold')
+            
+            # 1. 数据质量分布
+            ax1 = axes[0, 0]
+            quality_stats = results.get('quality_stats', {})
+            labels = ['空内容', '短内容', '重复内容', '缺失用户ID', '缺失视频ID']
+            values = [
+                quality_stats.get('null_content', 0), 
+                quality_stats.get('empty_content', 0), 
+                quality_stats.get('short_content', 0), 
+                quality_stats.get('missing_user_id', 0), 
+                quality_stats.get('missing_aweme_id', 0)
+            ]
+            
+            # 过滤掉值为0的项
+            non_zero_indices = [i for i, v in enumerate(values) if v > 0]
+            if non_zero_indices:
+                filtered_labels = [labels[i] for i in non_zero_indices]
+                filtered_values = [values[i] for i in non_zero_indices]
+                colors = ['red', 'orange', 'yellow', 'lightblue', 'lightgreen']
+                filtered_colors = [colors[i] for i in non_zero_indices]
+                
+                ax1.bar(filtered_labels, filtered_values, color=filtered_colors)
+                ax1.set_title('数据质量问题分布')
+                ax1.tick_params(axis='x', rotation=45)
+            else:
+                ax1.text(0.5, 0.5, '无数据质量问题', ha='center', va='center', transform=ax1.transAxes, fontsize=14)
+                ax1.set_xlim(0, 1)
+                ax1.set_ylim(0, 1)
+                ax1.axis('off')
         
-        # 1. 数据质量分布
-        ax1 = axes[0, 0]
-        quality_stats = results['quality_stats']
-        labels = ['空内容', '短内容', '重复内容', '缺失用户ID', '缺失视频ID']
-        values = [quality_stats['null_content'], quality_stats['empty_content'], 
-                 quality_stats['short_content'], quality_stats['missing_user_id'], 
-                 quality_stats['missing_aweme_id']]
+            # 2. 清洗流程统计
+            ax2 = axes[0, 1]
+            original_stats = results.get('original_stats', {})
+            spam_stats = results.get('spam_stats', {})
+            final_stats = results.get('final_stats', {})
+            
+            original_count = original_stats.get('total_comments', 0)
+            filtered_count = original_count - spam_stats.get('spam_count', 0)
+            cleaned_count = final_stats.get('total_comments', 0)
+            
+            stages = ['原始数据', '过滤垃圾', '文本清洗', '最终数据']
+            counts = [original_count, filtered_count, cleaned_count, cleaned_count]
+            
+            ax2.plot(stages, counts, marker='o', linewidth=2, markersize=8)
+            ax2.set_title('数据清洗流程统计')
+            ax2.set_ylabel('评论数量')
+            ax2.grid(True, alpha=0.3)
         
-        ax1.bar(labels, values, color=['red', 'orange', 'yellow', 'lightblue', 'lightgreen'])
-        ax1.set_title('数据质量问题分布')
-        ax1.tick_params(axis='x', rotation=45)
-        
-        # 2. 清洗流程统计
-        ax2 = axes[0, 1]
-        original_count = results['original_stats']['total_comments']
-        filtered_count = original_count - results['spam_stats']['spam_count']
-        cleaned_count = results['final_stats']['total_comments']
-        
-        stages = ['原始数据', '过滤垃圾', '文本清洗', '最终数据']
-        counts = [original_count, filtered_count, cleaned_count, cleaned_count]
-        
-        ax2.plot(stages, counts, marker='o', linewidth=2, markersize=8)
-        ax2.set_title('数据清洗流程统计')
-        ax2.set_ylabel('评论数量')
-        ax2.grid(True, alpha=0.3)
-        
-        # 3. 内容长度分布
-        ax3 = axes[1, 0]
-        ax3.hist(df['content'].str.len(), bins=30, alpha=0.7, color='skyblue', edgecolor='black')
-        ax3.set_xlabel('内容长度')
-        ax3.set_ylabel('频次')
-        ax3.set_title('内容长度分布')
-        ax3.grid(True, alpha=0.3)
-        
-        # 4. 词数分布
-        ax4 = axes[1, 1]
-        if 'word_count' in df.columns:
-            ax4.hist(df['word_count'], bins=20, alpha=0.7, color='lightgreen', edgecolor='black')
-            ax4.set_xlabel('词数')
-            ax4.set_ylabel('频次')
-            ax4.set_title('词数分布')
-        else:
-            ax4.text(0.5, 0.5, '无词数数据', ha='center', va='center', transform=ax4.transAxes, fontsize=14)
-            ax4.set_xlim(0, 1)
-            ax4.set_ylim(0, 1)
-            ax4.axis('off')
-        ax4.grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        plt.close()
+            # 3. 内容长度分布
+            ax3 = axes[1, 0]
+            if 'content' in df.columns and len(df) > 0:
+                content_lengths = df['content'].str.len()
+                if not content_lengths.isna().all():
+                    ax3.hist(content_lengths.dropna(), bins=30, alpha=0.7, color='skyblue', edgecolor='black')
+                    ax3.set_xlabel('内容长度')
+                    ax3.set_ylabel('频次')
+                    ax3.set_title('内容长度分布')
+                else:
+                    ax3.text(0.5, 0.5, '无内容长度数据', ha='center', va='center', transform=ax3.transAxes, fontsize=14)
+                    ax3.set_xlim(0, 1)
+                    ax3.set_ylim(0, 1)
+                    ax3.axis('off')
+            else:
+                ax3.text(0.5, 0.5, '无内容数据', ha='center', va='center', transform=ax3.transAxes, fontsize=14)
+                ax3.set_xlim(0, 1)
+                ax3.set_ylim(0, 1)
+                ax3.axis('off')
+            ax3.grid(True, alpha=0.3)
+            
+            # 4. 词数分布
+            ax4 = axes[1, 1]
+            if 'word_count' in df.columns and len(df) > 0:
+                word_counts = df['word_count']
+                if not word_counts.isna().all():
+                    ax4.hist(word_counts.dropna(), bins=20, alpha=0.7, color='lightgreen', edgecolor='black')
+                    ax4.set_xlabel('词数')
+                    ax4.set_ylabel('频次')
+                    ax4.set_title('词数分布')
+                else:
+                    ax4.text(0.5, 0.5, '无词数数据', ha='center', va='center', transform=ax4.transAxes, fontsize=14)
+                    ax4.set_xlim(0, 1)
+                    ax4.set_ylim(0, 1)
+                    ax4.axis('off')
+            else:
+                ax4.text(0.5, 0.5, '无词数数据', ha='center', va='center', transform=ax4.transAxes, fontsize=14)
+                ax4.set_xlim(0, 1)
+                ax4.set_ylim(0, 1)
+                ax4.axis('off')
+            ax4.grid(True, alpha=0.3)
+            
+            plt.tight_layout()
+            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+        except Exception as e:
+            print(f"❌ 创建可视化图表失败: {e}")
+            plt.close('all')  # 关闭所有图表
 
 def main():
     """主函数"""

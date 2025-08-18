@@ -342,10 +342,15 @@ class TimeAnalysisAnalyzer(BaseAnalyzer):
                 window_data = results['window_distribution']
                 labels = list(window_data['counts'].keys())
                 sizes = list(window_data['counts'].values())
-                colors = ['lightcoral', 'lightblue', 'lightgreen', 'yellow', 'orange']
-                
-                ax2.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=90)
-                ax2.set_title('从众时间窗口分布')
+                if sum(sizes) > 0:
+                    colors = ['lightcoral', 'lightblue', 'lightgreen', 'yellow', 'orange']
+                    ax2.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=90)
+                    ax2.set_title('从众时间窗口分布')
+                else:
+                    ax2.text(0.5, 0.5, '无窗口分布数据', ha='center', va='center', transform=ax2.transAxes, fontsize=14)
+                    ax2.set_xlim(0, 1)
+                    ax2.set_ylim(0, 1)
+                    ax2.axis('off')
             
             # 3. 时间差箱线图
             ax3 = axes[1, 0]

@@ -32,12 +32,16 @@ def main():
   
   4. 情感分析（使用清洗数据）
      python text_analysis_unified.py sentiment --use-cleaned-data --type local --video-id 123456
+  
+  5. 相似度分析（使用清洗数据）
+     python text_analysis_unified.py similarity --use-cleaned-data --video-id 123456
 
 测试模式示例:
   python text_analysis_unified.py cleaning --test
   python text_analysis_unified.py time --use-cleaned-data --test
   python text_analysis_unified.py like --use-cleaned-data --test
   python text_analysis_unified.py sentiment --use-cleaned-data --type local --test
+  python text_analysis_unified.py similarity --use-cleaned-data --test
         """
     )
     
@@ -49,7 +53,7 @@ def main():
     sentiment_parser.add_argument('--use-cleaned-data', action='store_true', 
                                  help='使用清洗后的数据文件（推荐）')
     sentiment_parser.add_argument('--type', choices=['local', 'aliyun'], 
-                                 default='local', help='分析器类型：local(本地词典) 或 aliyun(阿里云API)')
+                                 default='aliyun', help='分析器类型：local(本地词典) 或 aliyun(阿里云API)，默认aliyun')
     sentiment_parser.add_argument('--video-id', type=str, help='视频ID，如果不指定则分析所有评论')
     sentiment_parser.add_argument('--limit', type=int, help='限制分析数量')
     sentiment_parser.add_argument('--cleaned-data-path', type=str, help='清洗数据文件路径')
@@ -57,6 +61,10 @@ def main():
     sentiment_parser.add_argument('--no-save', action='store_true', help='不保存结果文件')
     sentiment_parser.add_argument('--no-report', action='store_true', help='不生成分析报告')
     sentiment_parser.add_argument('--no-viz', action='store_true', help='不创建可视化图表')
+    # 情感分析并发参数（透传到模块）
+    sentiment_parser.add_argument('--sa-concurrency', type=int, default=8, help='情感API并发数，默认8')
+    sentiment_parser.add_argument('--sa-batch-size', type=int, default=200, help='情感API批大小，默认200')
+    sentiment_parser.add_argument('--sa-throttle-ms', type=int, default=0, help='情感API节流毫秒，默认0=不限制')
     
     # 时间分析子命令
     time_parser = subparsers.add_parser('time', help='从众心理时间分析')
@@ -91,6 +99,22 @@ def main():
     cleaning_parser.add_argument('--no-report', action='store_true', help='不生成分析报告')
     cleaning_parser.add_argument('--no-viz', action='store_true', help='不创建可视化图表')
     
+    # 相似度分析子命令
+    similarity_parser = subparsers.add_parser('similarity', help='文本相似度分析')
+    similarity_parser.add_argument('--use-cleaned-data', action='store_true', 
+                                  help='使用清洗后的数据文件（推荐）')
+    similarity_parser.add_argument('--video-id', type=str, help='视频ID，如果不指定则分析所有数据')
+    similarity_parser.add_argument('--limit', type=int, help='限制分析数量')
+    similarity_parser.add_argument('--cleaned-data-path', type=str, help='清洗数据文件路径')
+    similarity_parser.add_argument('--similarity-threshold', type=float, default=0.7, 
+                                  help='相似度阈值（默认0.7）')
+    similarity_parser.add_argument('--time-diff-threshold', type=int, default=3600, 
+                                  help='时间差阈值(秒)（默认3600）')
+    similarity_parser.add_argument('--test', action='store_true', help='测试模式，只分析少量数据')
+    similarity_parser.add_argument('--no-save', action='store_true', help='不保存结果文件')
+    similarity_parser.add_argument('--no-report', action='store_true', help='不生成分析报告')
+    similarity_parser.add_argument('--no-viz', action='store_true', help='不创建可视化图表')
+    
     # 解析参数
     args = parser.parse_args()
     
@@ -115,7 +139,22 @@ def main():
         print("使用清洗数据")
     print("=" * 50)
     
-    # 根据模块调用相应的分析器
+    # 批量模式：未指定 --video-id 时，按视频ID批处理
+    if not getattr(args, 'video_id', None):
+        from text_analysis.utils import enumerate_aweme_ids
+        id_list = enumerate_aweme_ids(use_cleaned_data=getattr(args, 'use_cleaned_data', False), cleaned_data_path=getattr(args, 'cleaned_data_path', None))
+        if id_list:
+            print(f"🔁 未指定视频ID，按 {len(id_list)} 个视频ID 批量处理...")
+            for vid in id_list:
+                args.video_id = str(vid)
+                dispatch_module(args)
+            return
+        else:
+            print("⚠️ 未发现可处理的视频ID，回退到全量执行")
+            args.video_id = None
+    dispatch_module(args)
+def dispatch_module(args):
+    """按模块分发执行"""
     if args.module == 'sentiment':
         run_sentiment_analysis(args)
     elif args.module == 'time':
@@ -124,6 +163,8 @@ def main():
         run_like_analysis(args)
     elif args.module == 'cleaning':
         run_cleaning_analysis(args)
+    elif args.module == 'similarity':
+        run_similarity_analysis(args)
     else:
         print(f"❌ 未知的分析模块: {args.module}")
 
@@ -147,19 +188,22 @@ def run_sentiment_analysis(args):
             sys.argv.extend(['--cleaned-data-path', args.cleaned_data_path])
         if args.test:
             sys.argv.append('--test')
-        if args.no_save:
-            sys.argv.append('--no-save')
-        if args.no_report:
-            sys.argv.append('--no-report')
-        if args.no_viz:
-            sys.argv.append('--no-viz')
+        # sentiment 模块当前不支持 --no-report/--no-viz 原生参数，跳过透传
+        # 不透传 --no-save，sentiment 模块当前未定义该参数
+        # 并发性能参数透传
+        if hasattr(args, 'sa_concurrency'):
+            sys.argv.extend(['--sa-concurrency', str(args.sa_concurrency)])
+        if hasattr(args, 'sa_batch_size'):
+            sys.argv.extend(['--sa-batch-size', str(args.sa_batch_size)])
+        if hasattr(args, 'sa_throttle_ms'):
+            sys.argv.extend(['--sa-throttle-ms', str(args.sa_throttle_ms)])
         
         sentiment_main()
         
     except ImportError as e:
         print(f"❌ 导入情感分析模块失败: {e}")
     except Exception as e:
-        print(f"❌ 情感分析执行失败: {e}")
+        print(f"[ERR] 情感分析执行失败: {e}")
 
 def run_time_analysis(args):
     """运行时间分析"""
@@ -252,6 +296,42 @@ def run_cleaning_analysis(args):
         print(f"❌ 导入数据清洗模块失败: {e}")
     except Exception as e:
         print(f"❌ 数据清洗执行失败: {e}")
+
+def run_similarity_analysis(args):
+    """运行相似度分析"""
+    try:
+        from modules.similarity_analysis_optimized import main as similarity_main
+        import sys
+        
+        # 构建命令行参数
+        sys.argv = ['similarity_analysis_optimized.py']
+        if args.video_id:
+            sys.argv.extend(['--video-id', args.video_id])
+        if args.limit:
+            sys.argv.extend(['--limit', str(args.limit)])
+        if args.use_cleaned_data:
+            sys.argv.append('--use-cleaned-data')
+        if args.cleaned_data_path:
+            sys.argv.extend(['--cleaned-data-path', args.cleaned_data_path])
+        if args.similarity_threshold:
+            sys.argv.extend(['--similarity-threshold', str(args.similarity_threshold)])
+        if args.time_diff_threshold:
+            sys.argv.extend(['--time-diff-threshold', str(args.time_diff_threshold)])
+        if args.test:
+            sys.argv.append('--test')
+        if args.no_save:
+            sys.argv.append('--no-save')
+        if args.no_report:
+            sys.argv.append('--no-report')
+        if args.no_viz:
+            sys.argv.append('--no-viz')
+        
+        similarity_main()
+        
+    except ImportError as e:
+        print(f"❌ 导入相似度分析模块失败: {e}")
+    except Exception as e:
+        print(f"❌ 相似度分析执行失败: {e}")
 
 if __name__ == "__main__":
     main()
