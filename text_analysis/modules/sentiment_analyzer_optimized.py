@@ -14,6 +14,9 @@ import time
 import threading
 import argparse
 import logging
+import hmac
+import hashlib
+import base64
 from datetime import datetime
 from typing import Dict, List, Union, Optional
 import warnings
@@ -204,6 +207,11 @@ class AliyunAnalyzer:
             # 发送请求
             response = client.do_action_with_exception(request)
             result = json.loads(response)
+            try:
+                rid = result.get('RequestId') or result.get('RequestID')
+                logger.info(f"[Aliyun SA SDK] RequestId={rid}")
+            except Exception:
+                pass
             
             return self._parse_response(result)
             
@@ -215,9 +223,6 @@ class AliyunAnalyzer:
     def _analyze_with_http(self, text: str) -> Dict[str, Union[str, float]]:
         """使用HTTP请求分析"""
         import requests
-        import hashlib
-        import hmac
-        import base64
         
         params = {
             'Action': 'SentimentAnalysis',
@@ -239,6 +244,11 @@ class AliyunAnalyzer:
             response = requests.post(self.endpoint, data=params, timeout=30)
             response.raise_for_status()
             result = response.json()
+            try:
+                rid = result.get('RequestId') or result.get('RequestID')
+                logger.info(f"[Aliyun SA HTTP] RequestId={rid}")
+            except Exception:
+                pass
             return self._parse_response(result)
         except Exception as e:
             raise e

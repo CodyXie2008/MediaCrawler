@@ -30,6 +30,11 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, project_root)
 
 from text_analysis.core.base_analyzer import BaseAnalyzer, create_parser, parse_common_args
+from dotenv import load_dotenv, find_dotenv
+try:
+    from text_analysis.modules.aliyun_tokenizer_analyzer import AliyunTokenizerClient
+except Exception:
+    AliyunTokenizerClient = None  # 允许在未安装/未创建文件时回退到本地分词
 
 # 抑制jieba调试日志
 try:
@@ -44,16 +49,60 @@ plt.rcParams['axes.unicode_minus'] = False
 class DataCleaningAnalyzer(BaseAnalyzer):
     """数据清洗分析器"""
     
-    def __init__(self, video_id: str = None):
+    def __init__(self, video_id: str = None, segment_mode: str = 'local'):
         super().__init__("cleaning", video_id)
+        self.segment_mode = segment_mode  # 'local' | 'api'
         self.stop_words = self._load_stop_words()
+        
+        # 简化分词模式逻辑，默认使用本地分词
+        if self.segment_mode == 'api':
+            self._init_aliyun_tokenizer()
+            if getattr(self, 'aliyun_client', None) is None:
+                print('❌ API模式需要配置阿里云 AK/SK，自动回退到本地分词')
+                self.segment_mode = 'local'
+            else:
+                print('✅ 分词模式: API（使用阿里云分词）')
+        else:
+            print('✅ 分词模式: 本地（使用 jieba 分词）')
+
+    def _init_aliyun_tokenizer(self):
+        """初始化阿里云分词客户端（从 .env / 环境变量读取）。若未配置则置空回退到本地 jieba。"""
+        # 依次尝试加载根目录与 text_analysis 目录下的 .env
+        # 1) 当前工作目录
+        load_dotenv(override=False)
+        # 2) 项目根目录 .env
+        root_env = os.path.join(project_root, '.env')
+        if os.path.exists(root_env):
+            load_dotenv(dotenv_path=root_env, override=True)
+        # 3) text_analysis 目录 .env
+        ta_env = os.path.join(project_root, 'text_analysis', '.env')
+        if os.path.exists(ta_env):
+            load_dotenv(dotenv_path=ta_env, override=True)
+
+        self.aliyun_client = None
+        if AliyunTokenizerClient is None:
+            return
+        ak = os.getenv('NLP_AK_ENV')
+        sk = os.getenv('NLP_SK_ENV')
+        endpoint = os.getenv('NLP_REGION_ENV', 'cn-hangzhou')
+        # 构建完整的endpoint URL
+        endpoint = f'https://alinlp.{endpoint}.aliyuncs.com'
+        self.aliyun_tokenizer_id = os.getenv('ALIYUN_TOKENIZER_ID', 'GENERAL_CHN')
+        self.aliyun_out_type = os.getenv('ALIYUN_OUT_TYPE', '1')
+        if ak and sk:
+            try:
+                self.aliyun_client = AliyunTokenizerClient(ak, sk, endpoint)
+                print('✅ 已启用阿里云分词 API (env 已加载)')
+            except Exception as e:
+                print(f"❌ 初始化阿里云分词失败，回退本地分词: {e}")
         
     def _load_stop_words(self):
         """加载停用词"""
         stop_words = set()
         try:
-            # 尝试加载项目自带的停用词文件
-            stop_words_file = os.path.join(project_root, 'docs', 'hit_stopwords.txt')
+            # 仅从 modules 目录加载停用词
+            module_dir = os.path.dirname(os.path.abspath(__file__))
+            stop_words_file = os.path.join(module_dir, 'hit_stopwords.txt')
             if os.path.exists(stop_words_file):
                 with open(stop_words_file, 'r', encoding='utf-8') as f:
                     stop_words = set(line.strip() for line in f if line.strip())
@@ -181,11 +230,30 @@ class DataCleaningAnalyzer(BaseAnalyzer):
         if not text:
             return []
         
-        # 使用jieba分词
-        words = jieba.lcut(text)
+        # 简化分词逻辑，默认使用本地分词
+        if self.segment_mode == 'api' and getattr(self, 'aliyun_client', None) is not None:
+            try:
+                text_cut = text[:1024]
+                resp = self.aliyun_client.get_ws_ch_general(text_cut, self.aliyun_tokenizer_id, self.aliyun_out_type)
+                data_field = resp.get('Data')
+                payload = json.loads(data_field) if isinstance(data_field, str) else data_field
+                result = payload.get('result', []) if isinstance(payload, dict) else []
+                words = [item.get('word') for item in result if isinstance(item, dict) and item.get('word')]
+                try:
+                    req_id = resp.get('RequestId')
+                    sample_words = words[:3]
+                    print(f"[AliyunSeg OK] RequestId={req_id} words={sample_words}")
+                except Exception:
+                    pass
+            except Exception:
+                # API调用失败时回退到本地分词
+                words = jieba.lcut(text)
+        else:
+            # 使用本地 jieba 分词
+            words = jieba.lcut(text)
         
         # 过滤停用词和短词
-        filtered_words = [word for word in words if word.strip() and len(word.strip()) > 1 and word not in self.stop_words]
+        filtered_words = [word for word in words if word and word.strip() and len(word.strip()) > 1 and word not in self.stop_words]
         
         return filtered_words
     
@@ -455,13 +523,15 @@ class DataCleaningAnalyzer(BaseAnalyzer):
 def main():
     """主函数"""
     parser = create_parser("cleaning", "数据清洗分析工具")
+    # 添加分词模式参数：local（默认，本地分词）、api（阿里云分词）
+    parser.add_argument('--segment-mode', type=str, choices=['local', 'api'], default='local', help='分词模式：local(默认)/api')
     args = parser.parse_args()
     
     # 解析通用参数
     args = parse_common_args(parser, args)
     
     # 创建分析器
-    analyzer = DataCleaningAnalyzer(args.video_id)
+    analyzer = DataCleaningAnalyzer(args.video_id, segment_mode=args.segment_mode)
     
     # 运行分析
     analyzer.run_analysis(
