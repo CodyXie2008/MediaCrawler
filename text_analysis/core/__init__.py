@@ -2,20 +2,15 @@
 """
 从众心理分析核心模块
 
-包含基础分析器和路径管理功能
+包含情感分析核心功能和API连接测试
 """
 
-from .base_analyzer import BaseAnalyzer, create_parser, parse_common_args
-from .data_paths import AnalysisPathManager, PathManager
-from .aliyun_api_manager import AliyunAPIManager, get_aliyun_api_manager, is_aliyun_api_available
+from .sentiment_analysis_simple import SentimentManager, DictionaryAnalyzer, AliyunAnalyzer
+from .test_aliyun_connection import test_aliyun_connection
 
 __all__ = [
-    'BaseAnalyzer',
-    'create_parser',
-    'parse_common_args',
-    'AnalysisPathManager',
-    'PathManager',
-    'AliyunAPIManager',
-    'get_aliyun_api_manager',
-    'is_aliyun_api_available'
+    'SentimentManager',
+    'DictionaryAnalyzer', 
+    'AliyunAnalyzer',
+    'test_aliyun_connection'
 ] 

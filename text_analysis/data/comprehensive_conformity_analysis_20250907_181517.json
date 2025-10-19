@@ -1,0 +1,1311 @@
+{
+  "analysis_metadata": {
+    "analysis_time": "2025-09-07 18:15:17",
+    "analyzer_version": "v1.0.0",
+    "analysis_type": "comprehensive_conformity_analysis",
+    "total_comments": 337,
+    "parent_comment_id": "None"
+  },
+  "parent_comment_info": {
+    "comment_id": "None",
+    "content": "None"
+  },
+  "comprehensive_conformity_analysis": {
+    "overall_conformity_score": 0.3902987695874817,
+    "conformity_level": "低从众心理",
+    "score_breakdown": {
+      "time_conformity_score": 0.23577584170944318,
+      "sentiment_conformity_score": 0.7501082722384492,
+      "similarity_conformity_score": 0.57191730161085,
+      "like_conformity_score": 0.0033936627911843216
+    },
+    "analysis_summary": {
+      "time_conformity": {
+        "score": 0.23577584170944318,
+        "description": "时间维度从众心理分析"
+      },
+      "sentiment_conformity": {
+        "score": 0.7501082722384492,
+        "description": "情感维度从众心理分析"
+      },
+      "similarity_conformity": {
+        "score": 0.57191730161085,
+        "description": "文本相似度从众心理分析"
+      },
+      "like_conformity": {
+        "score": 0.0033936627911843216,
+        "description": "点赞行为从众心理分析"
+      }
+    }
+  },
+  "detailed_results": {
+    "time_conformity_analysis": {
+      "analysis_metadata": {
+        "analysis_time": "2025-09-07 18:12:40",
+        "analyzer_version": "v1.0.0",
+        "data_source": "unknown",
+        "total_comments": 337
+      },
+      "parent_comment_info": {
+        "comment_id": "7306470754056569635",
+        "content": "261，我的！seey是我发的！！！"
+      },
+      "parent_environment_time_analysis": {
+        "parent_comment_id": "7306470754056569635",
+        "child_comment_count": 336,
+        "parent_conformity_score": 0.23577584170944318,
+        "statistics": {
+          "mean_score": 0.23577584170944318,
+          "median_score": 0.06832426529771506,
+          "max_score": 0.9722444672271713,
+          "min_score": 0.0,
+          "std_score": 0.3019672912167329
+        },
+        "conformity_distribution": {
+          "high_conformity_count": 43,
+          "high_conformity_ratio": 0.12797619047619047,
+          "early_response_count": 5,
+          "early_response_ratio": 0.01488095238095238,
+          "quick_response_count": 0,
+          "quick_response_ratio": 0.0
+        },
+        "time_analysis": {
+          "avg_time_diff": 2245274.535714286,
+          "median_time_diff": 88571.0,
+          "min_time_diff": 929.0,
+          "max_time_diff": 53323883.0
+        },
+        "parent_info": {
+          "create_time": 1701170293,
+          "comment_time": "2023-11-28T11:18:13"
+        }
+      },
+      "time_classification": {},
+      "top_high_conformity_comments": [
+        {
+          "comment_id": "7306470754056569635",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "0",
+          "content": "261，我的！seey是我发的！！！",
+          "create_time": 1701170293,
+          "like_count": 149991,
+          "sub_comment_count": 1025,
+          "user_id": "110493671510",
+          "nickname": "FXXXXX",
+          "user_signature": null,
+          "words": [
+            "261",
+            "seey"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 11:18:13",
+          "is_parent": true,
+          "time_diff_seconds": 0.0,
+          "time_interval_seconds": 0.0,
+          "raw_conformity_score": 1.0,
+          "normalized_conformity_score": 1.0,
+          "time_category": "立即响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306474751168496436",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "超级大王炸 无糖可乐 独家记忆z 九天（增肌版）",
+          "create_time": 1701171222,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "987777324553299",
+          "nickname": "香菜留着明天吃",
+          "user_signature": null,
+          "words": [
+            "超级",
+            "大王",
+            "无糖",
+            "可乐",
+            "独家",
+            "记忆",
+            "九天",
+            "增肌版"
+          ],
+          "word_count": 8,
+          "comment_time": "2023-11-28 11:33:42",
+          "is_parent": false,
+          "time_diff_seconds": 929.0,
+          "time_interval_seconds": 929.0,
+          "raw_conformity_score": 0.9722444672271713,
+          "normalized_conformity_score": 0.9722444672271713,
+          "time_category": "较快响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306474877580706600",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "当时不知道留言啥，留了个爱我，两年过去了我依然爱自己！",
+          "create_time": 1701171251,
+          "like_count": 34134,
+          "sub_comment_count": 0,
+          "user_id": "110493671510",
+          "nickname": "FXXXXX",
+          "user_signature": null,
+          "words": [
+            "当时",
+            "知道",
+            "留言",
+            "两年",
+            "过去",
+            "依然"
+          ],
+          "word_count": 6,
+          "comment_time": "2023-11-28 11:34:11",
+          "is_parent": false,
+          "time_diff_seconds": 958.0,
+          "time_interval_seconds": 958.0,
+          "raw_conformity_score": 0.9713905525733563,
+          "normalized_conformity_score": 0.9713905525733563,
+          "time_category": "较快响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306484374516646693",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "爱自己是终身浪漫的开始",
+          "create_time": 1701173462,
+          "like_count": 4018,
+          "sub_comment_count": 0,
+          "user_id": "92874717385",
+          "nickname": "屿白告",
+          "user_signature": null,
+          "words": [
+            "终身",
+            "浪漫"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 12:11:02",
+          "is_parent": false,
+          "time_diff_seconds": 3169.0,
+          "time_interval_seconds": 3169.0,
+          "raw_conformity_score": 0.9084473906546158,
+          "normalized_conformity_score": 0.9084473906546158,
+          "time_category": "一般响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306484568302256935",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "你不说我以为是签到呢，给你个系统。",
+          "create_time": 1701173507,
+          "like_count": 170,
+          "sub_comment_count": 0,
+          "user_id": "10704541059",
+          "nickname": "幸运考霸",
+          "user_signature": null,
+          "words": [
+            "以为",
+            "签到",
+            "给你个",
+            "系统"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-11-28 12:11:47",
+          "is_parent": false,
+          "time_diff_seconds": 3214.0,
+          "time_interval_seconds": 3214.0,
+          "raw_conformity_score": 0.9072095976239738,
+          "normalized_conformity_score": 0.9072095976239738,
+          "time_category": "一般响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306485913445352203",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "哥们你的留言in space",
+          "create_time": 1701173822,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "66883327193",
+          "nickname": "嵐",
+          "user_signature": null,
+          "words": [
+            "哥们",
+            "留言",
+            "in",
+            "space"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-11-28 12:17:02",
+          "is_parent": false,
+          "time_diff_seconds": 3529.0,
+          "time_interval_seconds": 3529.0,
+          "raw_conformity_score": 0.8985921410227286,
+          "normalized_conformity_score": 0.8985921410227286,
+          "time_category": "一般响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306486449392829220",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "大佬求预算和流程",
+          "create_time": 1701173945,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "2929532779116212",
+          "nickname": "食熊",
+          "user_signature": null,
+          "words": [
+            "大佬",
+            "预算",
+            "流程"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 12:19:05",
+          "is_parent": false,
+          "time_diff_seconds": 3652.0,
+          "time_interval_seconds": 3652.0,
+          "raw_conformity_score": 0.8952494942208766,
+          "normalized_conformity_score": 0.8952494942208766,
+          "time_category": "延迟响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306488362662413093",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "激动哇！超级激动吧",
+          "create_time": 1701174390,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "62614914402",
+          "nickname": "EUD一颗卤蛋",
+          "user_signature": null,
+          "words": [
+            "激动",
+            "超级",
+            "激动"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 12:26:30",
+          "is_parent": false,
+          "time_diff_seconds": 4097.0,
+          "time_interval_seconds": 4097.0,
+          "raw_conformity_score": 0.8832597110260054,
+          "normalized_conformity_score": 0.8832597110260054,
+          "time_category": "延迟响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306489265075962633",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "Cabeza 好厉害啊",
+          "create_time": 1701174601,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "54946608213",
+          "nickname": "游灵.",
+          "user_signature": null,
+          "words": [
+            "Cabeza",
+            "厉害"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 12:30:01",
+          "is_parent": false,
+          "time_diff_seconds": 4308.0,
+          "time_interval_seconds": 4308.0,
+          "raw_conformity_score": 0.8776309198125981,
+          "normalized_conformity_score": 0.8776309198125981,
+          "time_category": "延迟响应",
+          "conformity_level": "很高"
+        },
+        {
+          "comment_id": "7306489997904642879",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "这是鱼眼镜头吗",
+          "create_time": 1701174772,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "382251124918221",
+          "nickname": "星星的汽车",
+          "user_signature": null,
+          "words": [
+            "这是",
+            "鱼眼",
+            "镜头"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 12:32:52",
+          "is_parent": false,
+          "time_diff_seconds": 4479.0,
+          "time_interval_seconds": 4479.0,
+          "raw_conformity_score": 0.8730955238257231,
+          "normalized_conformity_score": 0.8730955238257231,
+          "time_category": "延迟响应",
+          "conformity_level": "很高"
+        }
+      ]
+    },
+    "sentiment_conformity_analysis": {
+      "analysis_metadata": {
+        "analysis_time": "2025-09-07 18:14:12",
+        "analyzer_version": "v1.0.0",
+        "data_source": "unknown",
+        "total_comments": 337
+      },
+      "parent_comment_info": {
+        "comment_id": "7306470754056569635",
+        "content": "261，我的！seey是我发的！！！"
+      },
+      "parent_environment_sentiment_analysis": {
+        "parent_comment_id": "7306470754056569635",
+        "parent_sentiment_score": 0.9926,
+        "parent_sentiment_type": "正面",
+        "child_comment_count": 336,
+        "parent_sentiment_conformity_score": 0.7501082722384492,
+        "statistics": {
+          "mean_score": 0.7501082722384492,
+          "median_score": 0.9512767986441129,
+          "max_score": 1.0,
+          "min_score": 0.0,
+          "std_score": 0.3354864555947684
+        },
+        "conformity_distribution": {
+          "high_conformity_count": 234,
+          "high_conformity_ratio": 0.6964285714285714,
+          "sentiment_category_distribution": {
+            "高度情感从众": 184,
+            "非情感从众": 80,
+            "中度情感从众": 42,
+            "轻度情感从众": 18,
+            "低度情感从众": 12
+          }
+        },
+        "sentiment_analysis": {
+          "avg_sentiment_difference": 0.41771279761904756,
+          "median_sentiment_difference": 0.054850000000000065,
+          "min_sentiment_difference": 9.999999999998899e-05,
+          "max_sentiment_difference": 1.9862000000000002
+        },
+        "parent_info": {
+          "sentiment_score": 0.9926,
+          "sentiment_type": "正面",
+          "comment_id": "7306470754056569635"
+        }
+      },
+      "sentiment_classification": {
+        "高度情感从众": 182,
+        "非情感从众": 82,
+        "中度情感从众": 43,
+        "轻度情感从众": 17,
+        "低度情感从众": 12,
+        "父评论": 1
+      },
+      "top_high_sentiment_comments": [
+        {
+          "comment_id": "7306470754056569635",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "0",
+          "content": "261，我的！seey是我发的！！！",
+          "create_time": 1701170293,
+          "like_count": 149991,
+          "sub_comment_count": 1025,
+          "user_id": "110493671510",
+          "nickname": "FXXXXX",
+          "user_signature": null,
+          "words": [
+            "261",
+            "seey"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 11:18:13",
+          "is_parent": true,
+          "time_diff_seconds": 0.0,
+          "sentiment_difference": 0.0,
+          "raw_sentiment_conformity_score": 0.0,
+          "normalized_sentiment_conformity_score": 1.0,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9926,
+          "sentiment_confidence": 0.9956,
+          "sentiment_category": "父评论"
+        },
+        {
+          "comment_id": "7307657456380986112",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "Jking oii 阿桃 绘梨衣 砉 YQ 春意知几许 曦辰 胀胀的爱（清澈版） 《梅子熟了》 temperature 给予的予",
+          "create_time": 1701446599,
+          "like_count": 6,
+          "sub_comment_count": 0,
+          "user_id": "71111303241",
+          "nickname": "yamorh",
+          "user_signature": null,
+          "words": [
+            "Jking",
+            "oii",
+            "阿桃",
+            "绘梨衣",
+            "YQ",
+            "春意",
+            "几许",
+            "清澈",
+            "梅子",
+            "temperature",
+            "给予"
+          ],
+          "word_count": 11,
+          "comment_time": "2023-12-01 16:03:19",
+          "is_parent": false,
+          "time_diff_seconds": 276306.0,
+          "sentiment_difference": 9.999999999998899e-05,
+          "raw_sentiment_conformity_score": 9.999999999998899e-05,
+          "normalized_sentiment_conformity_score": 1.0,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9927,
+          "sentiment_confidence": 0.9936,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7306523805655663412",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "kooo 这就是理工男的浪漫嘛",
+          "create_time": 1701182644,
+          "like_count": 1,
+          "sub_comment_count": 0,
+          "user_id": "91933082752",
+          "nickname": "我的是无敌美少女",
+          "user_signature": null,
+          "words": [
+            "kooo",
+            "理工",
+            "浪漫"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 14:44:04",
+          "is_parent": false,
+          "time_diff_seconds": 12351.0,
+          "sentiment_difference": 0.00029999999999996696,
+          "raw_sentiment_conformity_score": 0.00029999999999996696,
+          "normalized_sentiment_conformity_score": 0.9998172047706685,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9929,
+          "sentiment_confidence": 0.9964,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7306543432254784310",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "睡眠大师 杏红爸比",
+          "create_time": 1701187213,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "92808464382",
+          "nickname": "栗。",
+          "user_signature": null,
+          "words": [
+            "睡眠",
+            "大师",
+            "杏红",
+            "爸比"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-11-28 16:00:13",
+          "is_parent": false,
+          "time_diff_seconds": 16920.0,
+          "sentiment_difference": 0.000300000000000078,
+          "raw_sentiment_conformity_score": 0.000300000000000078,
+          "normalized_sentiment_conformity_score": 0.9998172047706684,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9923,
+          "sentiment_confidence": 0.996,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7307875256134468389",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "辞安 深秋 爱吃脚皮 思瑞欧 Ti manca 泰森 b奇堡想睡大觉",
+          "create_time": 1701497303,
+          "like_count": 2,
+          "sub_comment_count": 0,
+          "user_id": "108128774399",
+          "nickname": "游辞",
+          "user_signature": null,
+          "words": [
+            "辞安",
+            "深秋",
+            "脚皮",
+            "思瑞欧",
+            "Ti",
+            "manca",
+            "泰森",
+            "奇堡",
+            "睡大觉"
+          ],
+          "word_count": 9,
+          "comment_time": "2023-12-02 06:08:23",
+          "is_parent": false,
+          "time_diff_seconds": 327010.0,
+          "sentiment_difference": 0.0004999999999999449,
+          "raw_sentiment_conformity_score": 0.0004999999999999449,
+          "normalized_sentiment_conformity_score": 0.9996344460857653,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9931,
+          "sentiment_confidence": 0.9959,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7307945733104468763",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "每天睡够25小时",
+          "create_time": 1701513711,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "95034095115",
+          "nickname": "Ray",
+          "user_signature": null,
+          "words": [
+            "每天",
+            "睡够",
+            "25",
+            "小时"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-12-02 10:41:51",
+          "is_parent": false,
+          "time_diff_seconds": 343418.0,
+          "sentiment_difference": 0.0004999999999999449,
+          "raw_sentiment_conformity_score": 0.0004999999999999449,
+          "normalized_sentiment_conformity_score": 0.9996344460857653,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9931,
+          "sentiment_confidence": 0.9964,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7306563279492039475",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "鱼幼薇 VE 好酷",
+          "create_time": 1701191844,
+          "like_count": 2,
+          "sub_comment_count": 0,
+          "user_id": "97871078841",
+          "nickname": "zZ17",
+          "user_signature": null,
+          "words": [
+            "鱼幼薇",
+            "VE",
+            "好酷"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 17:17:24",
+          "is_parent": false,
+          "time_diff_seconds": 21551.0,
+          "sentiment_difference": 0.0006000000000000449,
+          "raw_sentiment_conformity_score": 0.0006000000000000449,
+          "normalized_sentiment_conformity_score": 0.9995430804429086,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.992,
+          "sentiment_confidence": 0.9959,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7306499618715386634",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "长明 影视飓风真的牛逼",
+          "create_time": 1701177011,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "92576073384",
+          "nickname": "龙 仔",
+          "user_signature": null,
+          "words": [
+            "影视",
+            "飓风",
+            "真的"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 13:10:11",
+          "is_parent": false,
+          "time_diff_seconds": 6718.0,
+          "sentiment_difference": 0.0007000000000000339,
+          "raw_sentiment_conformity_score": 0.0007000000000000339,
+          "normalized_sentiment_conformity_score": 0.9994517239306814,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9933000000000001,
+          "sentiment_confidence": 0.9966,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7306900819491881782",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "无忧 an安桉铵谙 Satliim 夙",
+          "create_time": 1701270424,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "110634008638",
+          "nickname": "愿",
+          "user_signature": null,
+          "words": [
+            "无忧",
+            "an",
+            "安桉",
+            "Satliim"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-11-29 15:07:04",
+          "is_parent": false,
+          "time_diff_seconds": 100131.0,
+          "sentiment_difference": 0.0008000000000000229,
+          "raw_sentiment_conformity_score": 0.0008000000000000229,
+          "normalized_sentiment_conformity_score": 0.9993603765472587,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9934000000000001,
+          "sentiment_confidence": 0.9966,
+          "sentiment_category": "高度情感从众"
+        },
+        {
+          "comment_id": "7307181299352896290",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "40G安东星超人 随意舟 我Ming",
+          "create_time": 1701335731,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "743741116917256",
+          "nickname": "忙碌的玖栀",
+          "user_signature": null,
+          "words": [
+            "40G",
+            "安东",
+            "超人",
+            "随意",
+            "Ming"
+          ],
+          "word_count": 5,
+          "comment_time": "2023-11-30 09:15:31",
+          "is_parent": false,
+          "time_diff_seconds": 165438.0,
+          "sentiment_difference": 0.0008000000000000229,
+          "raw_sentiment_conformity_score": 0.0008000000000000229,
+          "normalized_sentiment_conformity_score": 0.9993603765472587,
+          "sentiment_type": "正面",
+          "sentiment_score": 0.9918,
+          "sentiment_confidence": 0.9958,
+          "sentiment_category": "高度情感从众"
+        }
+      ]
+    },
+    "similarity_conformity_analysis": {
+      "analysis_metadata": {
+        "analysis_time": "2025-09-07 18:15:17",
+        "analyzer_version": "v1.0.0",
+        "data_source": "unknown",
+        "total_comments": 337
+      },
+      "parent_comment_info": {
+        "comment_id": "7306470754056569635",
+        "content": "261，我的！seey是我发的！！！"
+      },
+      "parent_environment_similarity_analysis": {
+        "parent_comment_id": "7306470754056569635",
+        "parent_similarity_conformity_score": 0.57191730161085,
+        "child_comment_count": 336,
+        "statistics": {
+          "mean_score": 0.57191730161085,
+          "median_score": 0.592946565678037,
+          "std_score": 0.2506296499511971,
+          "min_score": 0.0,
+          "max_score": 1.0
+        },
+        "similarity_distribution": {
+          "high_similarity_count": 119,
+          "high_similarity_ratio": 0.3541666666666667,
+          "medium_similarity_count": 163,
+          "low_similarity_count": 54
+        },
+        "similarity_analysis": {
+          "mean_similarity": 0.57191730161085,
+          "median_similarity": 0.592946565678037,
+          "std_similarity": 0.2506296499511971,
+          "min_similarity": 0.0,
+          "max_similarity": 1.0
+        }
+      },
+      "similarity_classification": {
+        "低度相似": 0.13988095238095238,
+        "高度相似": 0.19940476190476192,
+        "轻度相似": 0.2648809523809524,
+        "中度相似": 0.29464285714285715,
+        "非相似": 0.10119047619047619
+      },
+      "top_high_similarity_comments": [
+        {
+          "comment_id": "7306470754056569635",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "0",
+          "content": "261，我的！seey是我发的！！！",
+          "create_time": 1701170293,
+          "like_count": 149991,
+          "sub_comment_count": 1025,
+          "user_id": "110493671510",
+          "nickname": "FXXXXX",
+          "user_signature": null,
+          "words": [
+            "261",
+            "seey"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 11:18:13",
+          "is_parent": true,
+          "time_diff_seconds": 0.0,
+          "similarity_score": 1.0,
+          "normalized_similarity_conformity_score": 1.0
+        },
+        {
+          "comment_id": "7315386204915794699",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "啊啊啊啊啊啊啊 简直太棒了！",
+          "create_time": 1703246082,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "62819264229",
+          "nickname": "精灵🧚‍♀️",
+          "user_signature": null,
+          "words": [
+            "啊啊啊",
+            "啊啊啊",
+            "简直",
+            "太棒了"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-12-22 11:54:42",
+          "is_parent": false,
+          "time_diff_seconds": 2075789.0,
+          "similarity_score": 0.9015933997097457,
+          "normalized_similarity_conformity_score": 1.0
+        },
+        {
+          "comment_id": "7307050390800220978",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "哈哈，你的梦想上天啦！",
+          "create_time": 1701305251,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "72058558426",
+          "nickname": "西装胖徒",
+          "user_signature": null,
+          "words": [
+            "梦想",
+            "上天"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-30 00:47:31",
+          "is_parent": false,
+          "time_diff_seconds": 134958.0,
+          "similarity_score": 0.896362812924237,
+          "normalized_similarity_conformity_score": 0.9941985081221839
+        },
+        {
+          "comment_id": "7308630150525551386",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "你小子让我逮到你了吧？",
+          "create_time": 1701673067,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "4402086715326654",
+          "nickname": "Caesar.w",
+          "user_signature": null,
+          "words": [
+            "小子",
+            "逮到"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-12-04 06:57:47",
+          "is_parent": false,
+          "time_diff_seconds": 502774.0,
+          "similarity_score": 0.8944046033748831,
+          "normalized_similarity_conformity_score": 0.9920265650378797
+        },
+        {
+          "comment_id": "7306824313246810914",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "不想吃饭 但会发财 中铂装饰小马 牛逼！！！！",
+          "create_time": 1701252611,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "1662110073104948",
+          "nickname": "NᴜYᴏᴀʜ",
+          "user_signature": null,
+          "words": [
+            "不想",
+            "吃饭",
+            "但会",
+            "发财",
+            "装饰",
+            "小马"
+          ],
+          "word_count": 6,
+          "comment_time": "2023-11-29 10:10:11",
+          "is_parent": false,
+          "time_diff_seconds": 82318.0,
+          "similarity_score": 0.8875071151175851,
+          "normalized_similarity_conformity_score": 0.9843762336806198
+        },
+        {
+          "comment_id": "7306839251617612595",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "爱自己啊，我以为你恋爱脑呢让别人爱你呢",
+          "create_time": 1701256089,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "111347069945",
+          "nickname": "MineMine",
+          "user_signature": null,
+          "words": [
+            "以为",
+            "恋爱",
+            "别人"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-29 11:08:09",
+          "is_parent": false,
+          "time_diff_seconds": 85796.0,
+          "similarity_score": 0.8828441190290973,
+          "normalized_similarity_conformity_score": 0.9792042835643158
+        },
+        {
+          "comment_id": "7314626124465668915",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "哇啊啊啊我勒个dollar！！！",
+          "create_time": 1703069112,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "87053407253",
+          "nickname": "雾凇银汐",
+          "user_signature": null,
+          "words": [
+            "啊啊啊",
+            "我勒个",
+            "dollar"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-12-20 10:45:12",
+          "is_parent": false,
+          "time_diff_seconds": 1898819.0,
+          "similarity_score": 0.8814913625897042,
+          "normalized_similarity_conformity_score": 0.9777038772394373
+        },
+        {
+          "comment_id": "7306537541447385868",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "救命！别太酷上太空啦虽然和我无关，但是我感动了",
+          "create_time": 1701185842,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "3835575685354200",
+          "nickname": "栖影🥝",
+          "user_signature": null,
+          "words": [
+            "救命",
+            "太酷",
+            "太空",
+            "无关",
+            "感动"
+          ],
+          "word_count": 5,
+          "comment_time": "2023-11-28 15:37:22",
+          "is_parent": false,
+          "time_diff_seconds": 15549.0,
+          "similarity_score": 0.8694337660061516,
+          "normalized_similarity_conformity_score": 0.9643302250061421
+        },
+        {
+          "comment_id": "7307900252878471947",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "dateme8 朋友！细糠！看完！",
+          "create_time": 1701503125,
+          "like_count": 1,
+          "sub_comment_count": 0,
+          "user_id": "87210687000",
+          "nickname": "（：",
+          "user_signature": null,
+          "words": [
+            "dateme8",
+            "朋友",
+            "细糠"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-12-02 07:45:25",
+          "is_parent": false,
+          "time_diff_seconds": 332832.0,
+          "similarity_score": 0.8689455892559531,
+          "normalized_similarity_conformity_score": 0.963788765019461
+        },
+        {
+          "comment_id": "7306514718343693090",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "？？？卧槽， 我想起来了，我也发过",
+          "create_time": 1701180527,
+          "like_count": 0,
+          "sub_comment_count": 0,
+          "user_id": "2792387422455725",
+          "nickname": "天清",
+          "user_signature": null,
+          "words": [
+            "卧槽",
+            "起来",
+            "发过"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 14:08:47",
+          "is_parent": false,
+          "time_diff_seconds": 10234.0,
+          "similarity_score": 0.866989198403093,
+          "normalized_similarity_conformity_score": 0.9616188391376944
+        }
+      ]
+    },
+    "like_conformity_analysis": {
+      "analysis_metadata": {
+        "analysis_time": "2025-09-07 18:15:17",
+        "analyzer_version": "v1.0.0",
+        "data_source": "unknown",
+        "total_comments": 337
+      },
+      "parent_comment_info": {
+        "comment_id": "7306470754056569635",
+        "content": "261，我的！seey是我发的！！！"
+      },
+      "parent_environment_like_analysis": {
+        "parent_comment_id": "7306470754056569635",
+        "parent_like_count": 149991,
+        "child_comment_count": 336,
+        "parent_like_conformity_score": 0.0033936627911843216,
+        "statistics": {
+          "mean_score": 0.0033936627911843216,
+          "median_score": 0.0,
+          "max_score": 1.0,
+          "min_score": 0.0,
+          "std_score": 0.05483265976409412
+        },
+        "conformity_distribution": {
+          "high_conformity_count": 1,
+          "high_conformity_ratio": 0.002976190476190476,
+          "like_category_distribution": {
+            "非从众": 336
+          }
+        },
+        "like_analysis": {
+          "avg_like_difference": 149875.1607142857,
+          "median_like_difference": 149991.0,
+          "min_like_difference": 115857,
+          "max_like_difference": 149991
+        },
+        "parent_info": {
+          "like_count": 149991,
+          "comment_id": "7306470754056569635"
+        }
+      },
+      "like_classification": {},
+      "top_high_like_comments": [
+        {
+          "comment_id": "7306470754056569635",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "0",
+          "content": "261，我的！seey是我发的！！！",
+          "create_time": 1701170293,
+          "like_count": 149991,
+          "sub_comment_count": 1025,
+          "user_id": "110493671510",
+          "nickname": "FXXXXX",
+          "user_signature": null,
+          "words": [
+            "261",
+            "seey"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 11:18:13",
+          "is_parent": true,
+          "time_diff_seconds": 0.0,
+          "like_difference": 0,
+          "raw_like_conformity_score": 0.0,
+          "normalized_like_conformity_score": 1.0,
+          "like_category": "父评论"
+        },
+        {
+          "comment_id": "7306474877580706600",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "当时不知道留言啥，留了个爱我，两年过去了我依然爱自己！",
+          "create_time": 1701171251,
+          "like_count": 34134,
+          "sub_comment_count": 0,
+          "user_id": "110493671510",
+          "nickname": "FXXXXX",
+          "user_signature": null,
+          "words": [
+            "当时",
+            "知道",
+            "留言",
+            "两年",
+            "过去",
+            "依然"
+          ],
+          "word_count": 6,
+          "comment_time": "2023-11-28 11:34:11",
+          "is_parent": false,
+          "time_diff_seconds": 958.0,
+          "like_difference": 115857,
+          "raw_like_conformity_score": 115857.0,
+          "normalized_like_conformity_score": 1.0,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7306484374516646693",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "爱自己是终身浪漫的开始",
+          "create_time": 1701173462,
+          "like_count": 4018,
+          "sub_comment_count": 0,
+          "user_id": "92874717385",
+          "nickname": "屿白告",
+          "user_signature": null,
+          "words": [
+            "终身",
+            "浪漫"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 12:11:02",
+          "is_parent": false,
+          "time_diff_seconds": 3169.0,
+          "like_difference": 145973,
+          "raw_like_conformity_score": 145973.0,
+          "normalized_like_conformity_score": 0.11771254467686176,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7306532084469056310",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "我的QQ签名就一直是这句话，我的天呐，会在抖音评论区里遇见",
+          "create_time": 1701184572,
+          "like_count": 497,
+          "sub_comment_count": 0,
+          "user_id": "93646412626",
+          "nickname": "花漾年華",
+          "user_signature": null,
+          "words": [
+            "QQ",
+            "签名",
+            "这句",
+            "天呐",
+            "抖音",
+            "评论",
+            "区里",
+            "遇见"
+          ],
+          "word_count": 8,
+          "comment_time": "2023-11-28 15:16:12",
+          "is_parent": false,
+          "time_diff_seconds": 14279.0,
+          "like_difference": 149494,
+          "raw_like_conformity_score": 149494.0,
+          "normalized_like_conformity_score": 0.014560262494873188,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7306484568302256935",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "你不说我以为是签到呢，给你个系统。",
+          "create_time": 1701173507,
+          "like_count": 170,
+          "sub_comment_count": 0,
+          "user_id": "10704541059",
+          "nickname": "幸运考霸",
+          "user_signature": null,
+          "words": [
+            "以为",
+            "签到",
+            "给你个",
+            "系统"
+          ],
+          "word_count": 4,
+          "comment_time": "2023-11-28 12:11:47",
+          "is_parent": false,
+          "time_diff_seconds": 3214.0,
+          "like_difference": 149821,
+          "raw_like_conformity_score": 149821.0,
+          "normalized_like_conformity_score": 0.004980371477119605,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7306509576656339727",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "哈哈哈哈哈哈，我还以为写的是繁体的发财可能是我想钱想疯了。",
+          "create_time": 1701179332,
+          "like_count": 35,
+          "sub_comment_count": 0,
+          "user_id": "105340566665",
+          "nickname": "7个green",
+          "user_signature": null,
+          "words": [
+            "哈哈哈",
+            "哈哈哈",
+            "以为",
+            "繁体",
+            "发财",
+            "可能"
+          ],
+          "word_count": 6,
+          "comment_time": "2023-11-28 13:48:52",
+          "is_parent": false,
+          "time_diff_seconds": 9039.0,
+          "like_difference": 149956,
+          "raw_like_conformity_score": 149956.0,
+          "normalized_like_conformity_score": 0.0010253705982304906,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7307657456380986112",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "Jking oii 阿桃 绘梨衣 砉 YQ 春意知几许 曦辰 胀胀的爱（清澈版） 《梅子熟了》 temperature 给予的予",
+          "create_time": 1701446599,
+          "like_count": 6,
+          "sub_comment_count": 0,
+          "user_id": "71111303241",
+          "nickname": "yamorh",
+          "user_signature": null,
+          "words": [
+            "Jking",
+            "oii",
+            "阿桃",
+            "绘梨衣",
+            "YQ",
+            "春意",
+            "几许",
+            "清澈",
+            "梅子",
+            "temperature",
+            "给予"
+          ],
+          "word_count": 11,
+          "comment_time": "2023-12-01 16:03:19",
+          "is_parent": false,
+          "time_diff_seconds": 276306.0,
+          "like_difference": 149985,
+          "raw_like_conformity_score": 149985.0,
+          "normalized_like_conformity_score": 0.00017577781683952853,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7306519428078043913",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "你是一帧一帧找的？",
+          "create_time": 1701181626,
+          "like_count": 3,
+          "sub_comment_count": 0,
+          "user_id": "98075085496",
+          "nickname": "空气炸锅",
+          "user_signature": null,
+          "words": [
+            "一帧",
+            "一帧"
+          ],
+          "word_count": 2,
+          "comment_time": "2023-11-28 14:27:06",
+          "is_parent": false,
+          "time_diff_seconds": 11333.0,
+          "like_difference": 149988,
+          "raw_like_conformity_score": 149988.0,
+          "normalized_like_conformity_score": 8.788890841970876e-05,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7306531712959464211",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "不自爱何以爱人",
+          "create_time": 1701184487,
+          "like_count": 3,
+          "sub_comment_count": 0,
+          "user_id": "72170335334",
+          "nickname": "阿攀达",
+          "user_signature": null,
+          "words": [
+            "自爱",
+            "何以",
+            "爱人"
+          ],
+          "word_count": 3,
+          "comment_time": "2023-11-28 15:14:47",
+          "is_parent": false,
+          "time_diff_seconds": 14194.0,
+          "like_difference": 149988,
+          "raw_like_conformity_score": 149988.0,
+          "normalized_like_conformity_score": 8.788890841970876e-05,
+          "like_category": "非从众"
+        },
+        {
+          "comment_id": "7307810386819744521",
+          "aweme_id": "7306437681045654834",
+          "parent_comment_id": "7306470754056569635",
+          "content": "slytherin 米兰d小铁匠 rrrr 111111One point 多情又专一 落樱 等弦断 7DY 見面那天",
+          "create_time": 1701482202,
+          "like_count": 3,
+          "sub_comment_count": 0,
+          "user_id": "103263094450",
+          "nickname": "🤕",
+          "user_signature": null,
+          "words": [
+            "slytherin",
+            "米兰",
+            "铁匠",
+            "rrrr",
+            "111111One",
+            "point",
+            "多情",
+            "专一",
+            "落樱",
+            "7DY",
+            "見面",
+            "那天"
+          ],
+          "word_count": 12,
+          "comment_time": "2023-12-02 01:56:42",
+          "is_parent": false,
+          "time_diff_seconds": 311909.0,
+          "like_difference": 149988,
+          "raw_like_conformity_score": 149988.0,
+          "normalized_like_conformity_score": 8.788890841970876e-05,
+          "like_category": "非从众"
+        }
+      ]
+    }
+  }
+}

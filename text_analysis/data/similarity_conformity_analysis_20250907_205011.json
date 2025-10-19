@@ -1,0 +1,283 @@
+{
+  "analysis_metadata": {
+    "analysis_time": "2025-09-07 20:50:11",
+    "analyzer_version": "v1.0.0",
+    "data_source": "unknown",
+    "total_comments": 10
+  },
+  "parent_comment_info": {
+    "comment_id": "7306470754056569635",
+    "content": "261，我的！seey是我发的！！！"
+  },
+  "parent_environment_similarity_analysis": {
+    "parent_comment_id": "7306470754056569635",
+    "parent_similarity_conformity_score": 0.5913976723074628,
+    "child_comment_count": 9,
+    "statistics": {
+      "mean_score": 0.5913976723074628,
+      "median_score": 0.74024941938373,
+      "std_score": 0.36671804879091474,
+      "min_score": 0.0,
+      "max_score": 1.0
+    },
+    "similarity_distribution": {
+      "high_similarity_count": 5,
+      "high_similarity_ratio": 0.5555555555555556,
+      "medium_similarity_count": 1,
+      "low_similarity_count": 3
+    },
+    "similarity_analysis": {
+      "mean_similarity": 0.5913976723074628,
+      "median_similarity": 0.74024941938373,
+      "std_similarity": 0.36671804879091474,
+      "min_similarity": 0.0,
+      "max_similarity": 1.0
+    }
+  },
+  "similarity_classification": {
+    "非相似": 0.2222222222222222,
+    "高度相似": 0.4444444444444444,
+    "低度相似": 0.1111111111111111,
+    "中度相似": 0.1111111111111111,
+    "轻度相似": 0.1111111111111111
+  },
+  "top_high_similarity_comments": [
+    {
+      "comment_id": "7306470754056569635",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "0",
+      "content": "261，我的！seey是我发的！！！",
+      "create_time": 1701170293,
+      "like_count": 149991,
+      "sub_comment_count": 1025,
+      "user_id": "110493671510",
+      "nickname": "FXXXXX",
+      "user_signature": null,
+      "words": [
+        "261",
+        "seey"
+      ],
+      "word_count": 2,
+      "comment_time": "2023-11-28 11:18:13",
+      "is_parent": true,
+      "time_diff_seconds": 0.0,
+      "similarity_score": 1.0,
+      "normalized_similarity_conformity_score": 1.0
+    },
+    {
+      "comment_id": "7306484568302256935",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "你不说我以为是签到呢，给你个系统。",
+      "create_time": 1701173507,
+      "like_count": 170,
+      "sub_comment_count": 0,
+      "user_id": "10704541059",
+      "nickname": "幸运考霸",
+      "user_signature": null,
+      "words": [
+        "以为",
+        "签到",
+        "给你个",
+        "系统"
+      ],
+      "word_count": 4,
+      "comment_time": "2023-11-28 12:11:47",
+      "is_parent": false,
+      "time_diff_seconds": 3214.0,
+      "similarity_score": 0.8331753445915242,
+      "normalized_similarity_conformity_score": 1.0
+    },
+    {
+      "comment_id": "7306474877580706600",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "当时不知道留言啥，留了个爱我，两年过去了我依然爱自己！",
+      "create_time": 1701171251,
+      "like_count": 34134,
+      "sub_comment_count": 0,
+      "user_id": "110493671510",
+      "nickname": "FXXXXX",
+      "user_signature": null,
+      "words": [
+        "当时",
+        "知道",
+        "留言",
+        "两年",
+        "过去",
+        "依然"
+      ],
+      "word_count": 6,
+      "comment_time": "2023-11-28 11:34:11",
+      "is_parent": false,
+      "time_diff_seconds": 958.0,
+      "similarity_score": 0.7935711060022228,
+      "normalized_similarity_conformity_score": 0.9346841885123399
+    },
+    {
+      "comment_id": "7306489265075962633",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "Cabeza 好厉害啊",
+      "create_time": 1701174601,
+      "like_count": 0,
+      "sub_comment_count": 0,
+      "user_id": "54946608213",
+      "nickname": "游灵.",
+      "user_signature": null,
+      "words": [
+        "Cabeza",
+        "厉害"
+      ],
+      "word_count": 2,
+      "comment_time": "2023-11-28 12:30:01",
+      "is_parent": false,
+      "time_diff_seconds": 4308.0,
+      "similarity_score": 0.7621826887152678,
+      "normalized_similarity_conformity_score": 0.8829180134907455
+    },
+    {
+      "comment_id": "7306488362662413093",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "激动哇！超级激动吧",
+      "create_time": 1701174390,
+      "like_count": 0,
+      "sub_comment_count": 0,
+      "user_id": "62614914402",
+      "nickname": "EUD一颗卤蛋",
+      "user_signature": null,
+      "words": [
+        "激动",
+        "超级",
+        "激动"
+      ],
+      "word_count": 3,
+      "comment_time": "2023-11-28 12:26:30",
+      "is_parent": false,
+      "time_diff_seconds": 4097.0,
+      "similarity_score": 0.7528133949517201,
+      "normalized_similarity_conformity_score": 0.8674660556440491
+    },
+    {
+      "comment_id": "7306485913445352203",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "哥们你的留言in space",
+      "create_time": 1701173822,
+      "like_count": 0,
+      "sub_comment_count": 0,
+      "user_id": "66883327193",
+      "nickname": "嵐",
+      "user_signature": null,
+      "words": [
+        "哥们",
+        "留言",
+        "in",
+        "space"
+      ],
+      "word_count": 4,
+      "comment_time": "2023-11-28 12:17:02",
+      "is_parent": false,
+      "time_diff_seconds": 3529.0,
+      "similarity_score": 0.6756755947739802,
+      "normalized_similarity_conformity_score": 0.74024941938373
+    },
+    {
+      "comment_id": "7306489997904642879",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "这是鱼眼镜头吗",
+      "create_time": 1701174772,
+      "like_count": 0,
+      "sub_comment_count": 0,
+      "user_id": "382251124918221",
+      "nickname": "星星的汽车",
+      "user_signature": null,
+      "words": [
+        "这是",
+        "鱼眼",
+        "镜头"
+      ],
+      "word_count": 3,
+      "comment_time": "2023-11-28 12:32:52",
+      "is_parent": false,
+      "time_diff_seconds": 4479.0,
+      "similarity_score": 0.5766180113022,
+      "normalized_similarity_conformity_score": 0.576882399111972
+    },
+    {
+      "comment_id": "7306484374516646693",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "爱自己是终身浪漫的开始",
+      "create_time": 1701173462,
+      "like_count": 4018,
+      "sub_comment_count": 0,
+      "user_id": "92874717385",
+      "nickname": "屿白告",
+      "user_signature": null,
+      "words": [
+        "终身",
+        "浪漫"
+      ],
+      "word_count": 2,
+      "comment_time": "2023-11-28 12:11:02",
+      "is_parent": false,
+      "time_diff_seconds": 3169.0,
+      "similarity_score": 0.3851045821758691,
+      "normalized_similarity_conformity_score": 0.2610360281240474
+    },
+    {
+      "comment_id": "7306474751168496436",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "超级大王炸 无糖可乐 独家记忆z 九天（增肌版）",
+      "create_time": 1701171222,
+      "like_count": 0,
+      "sub_comment_count": 0,
+      "user_id": "987777324553299",
+      "nickname": "香菜留着明天吃",
+      "user_signature": null,
+      "words": [
+        "超级",
+        "大王",
+        "无糖",
+        "可乐",
+        "独家",
+        "记忆",
+        "九天",
+        "增肌版"
+      ],
+      "word_count": 8,
+      "comment_time": "2023-11-28 11:33:42",
+      "is_parent": false,
+      "time_diff_seconds": 929.0,
+      "similarity_score": 0.2628079935780498,
+      "normalized_similarity_conformity_score": 0.05934294650028116
+    },
+    {
+      "comment_id": "7306486449392829220",
+      "aweme_id": "7306437681045654834",
+      "parent_comment_id": "7306470754056569635",
+      "content": "大佬求预算和流程",
+      "create_time": 1701173945,
+      "like_count": 0,
+      "sub_comment_count": 0,
+      "user_id": "2929532779116212",
+      "nickname": "食熊",
+      "user_signature": null,
+      "words": [
+        "大佬",
+        "预算",
+        "流程"
+      ],
+      "word_count": 3,
+      "comment_time": "2023-11-28 12:19:05",
+      "is_parent": false,
+      "time_diff_seconds": 3652.0,
+      "similarity_score": 0.2268254013349249,
+      "normalized_similarity_conformity_score": 0.0
+    }
+  ]
+}

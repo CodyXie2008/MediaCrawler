@@ -5,7 +5,6 @@
 
 import os
 from pathlib import Path
-from typing import Optional
 from datetime import datetime
 
 # 获取项目根目录 - 指向MediaCrawler项目根目录
@@ -35,14 +34,11 @@ def get_data_path(category: str, filename: str) -> str:
     
     return str(DATA_DIRS[category] / filename)
 
- # 生成带时间戳和视频ID的文件名
-def get_timestamped_filename(prefix: str, video_id: str = None, suffix: str = '.json') -> str:
-    """生成带时间戳和视频ID的文件名，防止覆盖"""
+# 生成带时间戳的文件名
+def get_timestamped_filename(prefix: str, suffix: str = '.json') -> str:
+    """生成带时间戳的文件名"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    if video_id:
-        return f"{prefix}_{video_id}_{timestamp}{suffix}"
-    else:
-        return f"{prefix}_{timestamp}{suffix}"
+    return f"{prefix}_{timestamp}{suffix}"
 
 # 常用文件路径
 COMMON_PATHS = {
@@ -50,158 +46,69 @@ COMMON_PATHS = {
     'stopwords': PROJECT_ROOT / 'docs' / 'hit_stopwords.txt'
 }
 
-# 统一的分析模块路径管理器
-class AnalysisPathManager:
-    """统一的分析模块路径管理器"""
-    
-    def __init__(self, module_name: str, video_id: str = None):
-        """
-        初始化路径管理器
-        
-        Args:
-            module_name: 模块名称 (sentiment, time, like, cleaning)
-            video_id: 视频ID，用于文件命名
-        """
-        self.module_name = module_name
-        self.video_id = video_id
-        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-    def get_results_paths(self) -> dict:
-        """获取结果文件路径"""
-        base_name = f"results_{self.module_name}"
-        if self.video_id:
-            base_name = f"{base_name}_{self.video_id}"
-        return {
-            'csv': get_data_path('results', f"{base_name}_{self.timestamp}.csv"),
-            'json': get_data_path('results', f"{base_name}_{self.timestamp}.json")
-        }
-    
-    def get_report_path(self) -> str:
-        """获取报告文件路径"""
-        base_name = f"reports_{self.module_name}"
-        if self.video_id:
-            base_name = f"{base_name}_{self.video_id}"
-        return get_data_path('reports', f"{base_name}_{self.timestamp}.json")
-    
-    def get_visualization_path(self, chart_type: str = "main") -> str:
-        """获取可视化文件路径"""
-        base_name = f"visualizations_{self.module_name}"
-        if self.video_id:
-            base_name = f"{base_name}_{self.video_id}"
-        return get_data_path('visualizations', f"{base_name}_{self.timestamp}.png")
-    
-    def get_cleaned_data_path(self) -> str:
-        """获取清洗数据文件路径"""
-        base_name = "processed_cleaning"
-        if self.video_id:
-            base_name = f"{base_name}_{self.video_id}"
-        return get_data_path('processed', f"{base_name}_{self.timestamp}.json")
-
-
-def resolve_latest_cleaned_data(video_id: Optional[str] = None) -> Optional[str]:
-    """解析并返回最新的清洗数据文件路径。
-
-    优先顺序：
-    1) processed_cleaning_{video_id}_*.json（按修改时间倒序）
-    2) processed_cleaning_*.json（按修改时间倒序）
-    3) douyin_comments_processed_{video_id}.json（兼容别名）
-    4) douyin_comments_processed.json（全局别名）
-
-    Returns: 绝对路径字符串或 None
-    """
-    processed_dir: Path = DATA_DIRS['processed']
-
-    # 1) video_id 定向匹配
-    if video_id:
-        candidates = sorted(
-            processed_dir.glob(f"processed_cleaning_{video_id}_*.json"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
-        if candidates:
-            return str(candidates[0])
-
-    # 2) 全局最新 cleaned_data_*.json
-    candidates = sorted(
-        processed_dir.glob("processed_cleaning_*.json"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    if candidates:
-        return str(candidates[0])
-
-    # 3) 兼容别名（带 video_id）
-    if video_id:
-        alias_with_id = processed_dir / f"douyin_comments_processed_{video_id}.json"
-        if alias_with_id.exists():
-            return str(alias_with_id)
-
-    # 4) 全局别名
-    alias_global = processed_dir / "douyin_comments_processed.json"
-    if alias_global.exists():
-        return str(alias_global)
-
-    return None
-
-# 模块特定的路径生成函数（保持向后兼容）
+# 模块特定的路径生成函数
 class PathManager:
-    """路径管理器（向后兼容）"""
+    """路径管理器"""
     
     @staticmethod
-    def get_sentiment_analysis_paths(video_id: str = None):
+    def get_sentiment_analysis_paths():
         """获取情感分析模块的路径"""
-        manager = AnalysisPathManager("sentiment", video_id)
+        timestamp = get_timestamped_filename('sentiment_analysis', '')
         return {
-            'results_csv': manager.get_results_paths()['csv'],
-            'results_json': manager.get_results_paths()['json'],
-            'report': manager.get_report_path(),
-            'visualization': manager.get_visualization_path()
+            'results_csv': get_data_path('results', f'sentiment_analysis_results_{timestamp}.csv'),
+            'results_json': get_data_path('results', f'sentiment_analysis_results_{timestamp}.json'),
+            'report': get_data_path('reports', f'sentiment_analysis_report_{timestamp}.json'),
+            'visualization': get_data_path('visualizations', 'sentiment_analysis_visualization.png')
         }
     
     @staticmethod
-    def get_time_analysis_paths(video_id: str = None):
+    def get_time_analysis_paths():
         """获取时间分析模块的路径"""
-        manager = AnalysisPathManager("time", video_id)
+        timestamp = get_timestamped_filename('time_analysis', '')
         return {
-            'report': manager.get_report_path(),
-            'visualization': manager.get_visualization_path()
+            'report': get_data_path('reports', f'time_analysis_report_{timestamp}.json'),
+            'visualization': get_data_path('visualizations', f'time_analysis_visualization_{timestamp}.png')
         }
     
     @staticmethod
-    def get_like_analysis_paths(video_id: str = None):
+    def get_like_analysis_paths():
         """获取点赞分析模块的路径"""
-        manager = AnalysisPathManager("like", video_id)
+        timestamp = get_timestamped_filename('like_analysis', '')
         return {
-            'report': manager.get_report_path(),
-            'visualization': manager.get_visualization_path()
+            'report': get_data_path('reports', f'like_analysis_report_{timestamp}.json'),
+            'visualization': get_data_path('visualizations', f'like_analysis_visualization_{timestamp}.png')
         }
     
     @staticmethod
-    def get_data_cleaning_paths(video_id: str = None):
+    def get_data_cleaning_paths():
         """获取数据清洗模块的路径"""
-        manager = AnalysisPathManager("cleaning", video_id)
+        timestamp = get_timestamped_filename('data_cleaning', '')
         return {
-            'processed_data': manager.get_cleaned_data_path(),
-            'cleaning_report': manager.get_report_path()
+            'processed_data': get_data_path('processed', f'cleaned_data_{timestamp}.json'),
+            'cleaning_report': get_data_path('reports', f'cleaning_report_{timestamp}.json')
         }
     
     @staticmethod
-    def get_conformity_analysis_paths(video_id: str = None):
+    def get_conformity_analysis_paths():
         """获取从众心理综合分析路径"""
-        manager = AnalysisPathManager("conformity", video_id)
+        timestamp = get_timestamped_filename('conformity_analysis', '')
         return {
-            'comprehensive_report': manager.get_report_path(),
-            'summary_visualization': manager.get_visualization_path("summary")
+            'comprehensive_report': get_data_path('reports', f'conformity_comprehensive_report_{timestamp}.json'),
+            'summary_visualization': get_data_path('visualizations', f'conformity_summary_{timestamp}.png')
         }
 
 # 便捷函数
-def get_conformity_time_paths(video_id: str = None):
-    """获取从众心理时间分析路径"""
-    return PathManager.get_time_analysis_paths(video_id)
+def get_sentiment_analysis_paths():
+    """获取情感分析模块的路径（向后兼容）"""
+    return PathManager.get_sentiment_analysis_paths()
 
-def get_like_interaction_paths(video_id: str = None):
-    """获取点赞互动分析路径"""
-    return PathManager.get_like_analysis_paths(video_id)
+def get_conformity_time_paths():
+    """获取从众时间分析模块的路径（向后兼容）"""
+    return PathManager.get_time_analysis_paths()
+
+def get_like_interaction_paths():
+    """获取点赞互动分析模块的路径（向后兼容）"""
+    return PathManager.get_like_analysis_paths()
 
 # 初始化时确保目录存在
 ensure_directories() 
