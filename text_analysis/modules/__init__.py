@@ -1,16 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-从众心理分析功能模块
+文本分析功能模块
 
-包含时间集中度分析、点赞互动分析、数据清洗等功能
+包含数据清洗、情感分析、相似度分析、时间分析、点赞分析等功能
 """
 
-from .conformity_time_analysis import ConformityTimeAnalyzer
-from .like_interaction_analysis import LikeInteractionAnalyzer
-from .data_preparation_and_cleaning import DataCleaner
+# 核心分析模块
+from .sentiment_conformity_analyzer import SentimentConformityAnalyzer
+from .similarity_conformity_analyzer import SimilarityConformityAnalyzer
+from .conformity_time_analyzer import ConformityTimeAnalyzer
+from .like_conformity_analyzer import LikeConformityAnalyzer
+from .data_cleaning_optimized import DataCleaningAnalyzer
+
+# API管理器
+from core.aliyun_api_manager import AliyunAPIManager, get_aliyun_api_manager, is_aliyun_api_available
 
 __all__ = [
-    'ConformityTimeAnalyzer',
-    'LikeInteractionAnalyzer',
-    'DataCleaner'
-] 
+    # 核心分析模块
+    'SentimentConformityAnalyzer',
+    'SimilarityConformityAnalyzer',
+    'ConformityTimeAnalyzer', 
+    'LikeConformityAnalyzer',
+    'DataCleaningAnalyzer',
+    # API管理器
+    'AliyunAPIManager',
+    'get_aliyun_api_manager',
+    'is_aliyun_api_available'
+]
