@@ -1,3 +1,16 @@
+<div align="center" markdown="1">
+   <sup>Special thanks to:</sup>
+   <br>
+   <br>
+   <a href="https://go.warp.dev/MediaCrawler">
+      <img alt="Warp sponsorship" width="400" src="https://github.com/warpdotdev/brand-assets/blob/main/Github/Sponsor/Warp-Github-LG-02.png?raw=true">
+   </a>
+
+### [Warp is built for coding with multiple AI agents](https://go.warp.dev/MediaCrawler)
+
+
+</div>
+<hr>
 # 🔥 MediaCrawler - Social Media Platform Crawler 🕷️
 
 <div align="center">
@@ -194,11 +207,31 @@ python main.py --help
 ## 💾 Data Storage
 
 Supports multiple data storage methods:
-
-- **MySQL Database**: Supports saving to relational database MySQL (need to create database in advance)
-  - Execute `python db.py` to initialize database table structure (only execute on first run)
 - **CSV Files**: Supports saving to CSV (under `data/` directory)
 - **JSON Files**: Supports saving to JSON (under `data/` directory)
+- **Database Storage**
+  - Use the `--init_db` parameter for database initialization (when using `--init_db`, no other optional arguments are needed)
+  - **SQLite Database**: Lightweight database, no server required, suitable for personal use (recommended)
+    1. Initialization: `--init_db sqlite`
+    2. Data Storage: `--save_data_option sqlite`
+  - **MySQL Database**: Supports saving to relational database MySQL (database needs to be created in advance)
+    1. Initialization: `--init_db mysql`
+    2. Data Storage: `--save_data_option db` (the db parameter is retained for compatibility with historical updates)
+
+
+### Usage Examples:
+```shell
+# Initialize SQLite database (when using '--init_db', no other optional arguments are needed)
+uv run main.py --init_db sqlite
+# Use SQLite to store data (recommended for personal users)
+uv run main.py --platform xhs --lt qrcode --type search --save_data_option sqlite
+```
+```shell
+# Initialize MySQL database
+uv run main.py --init_db mysql
+# Use MySQL to store data (the db parameter is retained for compatibility with historical updates)
+uv run main.py --platform xhs --lt qrcode --type search --save_data_option db
+```
 
 ---
 
@@ -243,16 +276,13 @@ If this project helps you, please give a ⭐ Star to support and let more people
 > Exclusive discount code: **GHB5** Get 10% off instantly!
 </a>
 
-<br><br>
-
-<a href="https://sider.ai/ad-land-redirect?source=github&p1=mi&p2=kk">**Sider** - The hottest ChatGPT plugin on the web, amazing experience!</a>
 
 ### 🤝 Become a Sponsor
 
 Become a sponsor and showcase your product here, getting massive exposure daily!
 
 **Contact Information**:
-- WeChat: `yzglan`
+- WeChat: `relakkes`
 - Email: `relakkes@gmail.com`
 
 

@@ -21,10 +21,10 @@ import re
 import urllib
 import urllib.parse
 from io import BytesIO
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 
 import httpx
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageShow
 from playwright.async_api import Cookie, Page
 
 from . import utils
@@ -88,6 +88,7 @@ def show_qrcode(qr_code) -> None:  # type: ignore
     new_image.paste(image, (10, 10))
     draw = ImageDraw.Draw(new_image)
     draw.rectangle((0, 0, width + 19, height + 19), outline=(0, 0, 0), width=1)
+    del ImageShow.UnixViewer.options["save_all"]
     new_image.show()
 
 
@@ -171,16 +172,22 @@ def match_interact_info_count(count_str: str) -> int:
         return 0
 
 
-def format_proxy_info(ip_proxy_info) -> Tuple[Optional[Dict], Optional[Dict]]:
+def format_proxy_info(ip_proxy_info) -> Tuple[Optional[Dict], Optional[str]]:
     """format proxy info for playwright and httpx"""
+    # fix circular import issue
+    from proxy.proxy_ip_pool import IpInfoModel
+    ip_proxy_info = cast(IpInfoModel, ip_proxy_info)
+
     playwright_proxy = {
         "server": f"{ip_proxy_info.protocol}{ip_proxy_info.ip}:{ip_proxy_info.port}",
         "username": ip_proxy_info.user,
         "password": ip_proxy_info.password,
     }
-    httpx_proxy = {
-        f"{ip_proxy_info.protocol}": f"http://{ip_proxy_info.user}:{ip_proxy_info.password}@{ip_proxy_info.ip}:{ip_proxy_info.port}"
-    }
+    # httpx 0.28.1 需要直接传入代理URL字符串，而不是字典
+    if ip_proxy_info.user and ip_proxy_info.password:
+        httpx_proxy = f"http://{ip_proxy_info.user}:{ip_proxy_info.password}@{ip_proxy_info.ip}:{ip_proxy_info.port}"
+    else:
+        httpx_proxy = f"http://{ip_proxy_info.ip}:{ip_proxy_info.port}"
     return playwright_proxy, httpx_proxy
 
 

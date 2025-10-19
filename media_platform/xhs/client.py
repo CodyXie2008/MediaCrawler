@@ -8,7 +8,6 @@
 # 详细许可条款请参阅项目根目录下的LICENSE文件。
 # 使用本代码即表示您同意遵守上述原则和LICENSE中的所有条款。
 
-
 import asyncio
 import json
 import re
@@ -27,19 +26,21 @@ from html import unescape
 from .exception import DataFetchError, IPBlockError
 from .field import SearchNoteType, SearchSortType
 from .help import get_search_id, sign
+from .extractor import XiaoHongShuExtractor
 
 
 class XiaoHongShuClient(AbstractApiClient):
+
     def __init__(
         self,
-        timeout=10,
-        proxies=None,
+        timeout=60,  # 若开启爬取媒体选项，xhs 的长视频需要更久的超时时间
+        proxy=None,
         *,
         headers: Dict[str, str],
         playwright_page: Page,
         cookie_dict: Dict[str, str],
     ):
-        self.proxies = proxies
+        self.proxy = proxy
         self.timeout = timeout
         self.headers = headers
         self._host = "https://edith.xiaohongshu.com"
@@ -50,6 +51,7 @@ class XiaoHongShuClient(AbstractApiClient):
         self.NOTE_ABNORMAL_CODE = -510001
         self.playwright_page = playwright_page
         self.cookie_dict = cookie_dict
+        self._extractor = XiaoHongShuExtractor()
 
     async def _pre_headers(self, url: str, data=None) -> Dict:
         """
@@ -95,17 +97,16 @@ class XiaoHongShuClient(AbstractApiClient):
         """
         # return response.text
         return_response = kwargs.pop("return_response", False)
-
-        async with httpx.AsyncClient(proxies=self.proxies) as client:
+        async with httpx.AsyncClient(proxy=self.proxy) as client:
             response = await client.request(method, url, timeout=self.timeout, **kwargs)
 
         if response.status_code == 471 or response.status_code == 461:
             # someday someone maybe will bypass captcha
             verify_type = response.headers["Verifytype"]
             verify_uuid = response.headers["Verifyuuid"]
-            raise Exception(
-                f"出现验证码，请求失败，Verifytype: {verify_type}，Verifyuuid: {verify_uuid}, Response: {response}"
-            )
+            msg = f"出现验证码，请求失败，Verifytype: {verify_type}，Verifyuuid: {verify_uuid}, Response: {response}"
+            utils.logger.error(msg)
+            raise Exception(msg)
 
         if return_response:
             return response.text
@@ -156,15 +157,24 @@ class XiaoHongShuClient(AbstractApiClient):
         )
 
     async def get_note_media(self, url: str) -> Union[bytes, None]:
-        async with httpx.AsyncClient(proxies=self.proxies) as client:
-            response = await client.request("GET", url, timeout=self.timeout)
-            if not response.reason_phrase == "OK":
+        async with httpx.AsyncClient(proxy=self.proxy) as client:
+            try:
+                response = await client.request("GET", url, timeout=self.timeout)
+                response.raise_for_status()
+                if not response.reason_phrase == "OK":
+                    utils.logger.error(
+                        f"[XiaoHongShuClient.get_note_media] request {url} err, res:{response.text}"
+                    )
+                    return None
+                else:
+                    return response.content
+            except (
+                httpx.HTTPError
+            ) as exc:  # some wrong when call httpx.request method, such as connection error, client error, server error or response status code is not 2xx
                 utils.logger.error(
-                    f"[XiaoHongShuClient.get_note_media] request {url} err, res:{response.text}"
-                )
+                    f"[XiaoHongShuClient.get_aweme_media] {exc.__class__.__name__} for {exc.request.url} - {exc}"
+                )  # 保留原始异常类型名称，以便开发者调试
                 return None
-            else:
-                return response.content
 
     async def pong(self) -> bool:
         """
@@ -232,7 +242,10 @@ class XiaoHongShuClient(AbstractApiClient):
         return await self.post(uri, data)
 
     async def get_note_by_id(
-        self, note_id: str, xsec_source: str, xsec_token: str
+        self,
+        note_id: str,
+        xsec_source: str,
+        xsec_token: str,
     ) -> Dict:
         """
         获取笔记详情API
@@ -266,7 +279,10 @@ class XiaoHongShuClient(AbstractApiClient):
         return dict()
 
     async def get_note_comments(
-        self, note_id: str, xsec_token: str, cursor: str = ""
+        self,
+        note_id: str,
+        xsec_token: str,
+        cursor: str = "",
     ) -> Dict:
         """
         获取一级评论的API
@@ -415,7 +431,7 @@ class XiaoHongShuClient(AbstractApiClient):
                     num=10,
                     cursor=sub_comment_cursor,
                 )
-                
+
                 if comments_res is None:
                     utils.logger.info(
                         f"[XiaoHongShuClient.get_comments_all_sub_comments] No response found for note_id: {note_id}"
@@ -435,30 +451,36 @@ class XiaoHongShuClient(AbstractApiClient):
                 result.extend(comments)
         return result
 
-    async def get_creator_info(self, user_id: str) -> Dict:
+    async def get_creator_info(
+        self, user_id: str, xsec_token: str = "", xsec_source: str = ""
+    ) -> Dict:
         """
         通过解析网页版的用户主页HTML，获取用户个人简要信息
         PC端用户主页的网页存在window.__INITIAL_STATE__这个变量上的，解析它即可
-        eg: https://www.xiaohongshu.com/user/profile/59d8cb33de5fb4696bf17217
+
+        Args:
+            user_id: 用户ID
+            xsec_token: 验证token (可选,如果URL中包含此参数则传入)
+            xsec_source: 渠道来源 (可选,如果URL中包含此参数则传入)
+
+        Returns:
+            Dict: 创作者信息
         """
+        # 构建URI,如果有xsec参数则添加到URL中
         uri = f"/user/profile/{user_id}"
+        if xsec_token and xsec_source:
+            uri = f"{uri}?xsec_token={xsec_token}&xsec_source={xsec_source}"
+
         html_content = await self.request(
             "GET", self._domain + uri, return_response=True, headers=self.headers
         )
-        match = re.search(
-            r"<script>window.__INITIAL_STATE__=(.+)<\/script>", html_content, re.M
-        )
-
-        if match is None:
-            return {}
-
-        info = json.loads(match.group(1).replace(":undefined", ":null"), strict=False)
-        if info is None:
-            return {}
-        return info.get("user").get("userPageData")
+        return self._extractor.extract_creator_info_from_html(html_content)
 
     async def get_notes_by_creator(
-        self, creator: str, cursor: str, page_size: int = 30
+        self,
+        creator: str,
+        cursor: str,
+        page_size: int = 30,
     ) -> Dict:
         """
         获取博主的笔记
@@ -569,32 +591,6 @@ class XiaoHongShuClient(AbstractApiClient):
         Returns:
 
         """
-
-        def camel_to_underscore(key):
-            return re.sub(r"(?<!^)(?=[A-Z])", "_", key).lower()
-
-        def transform_json_keys(json_data):
-            data_dict = json.loads(json_data)
-            dict_new = {}
-            for key, value in data_dict.items():
-                new_key = camel_to_underscore(key)
-                if not value:
-                    dict_new[new_key] = value
-                elif isinstance(value, dict):
-                    dict_new[new_key] = transform_json_keys(json.dumps(value))
-                elif isinstance(value, list):
-                    dict_new[new_key] = [
-                        (
-                            transform_json_keys(json.dumps(item))
-                            if (item and isinstance(item, dict))
-                            else item
-                        )
-                        for item in value
-                    ]
-                else:
-                    dict_new[new_key] = value
-            return dict_new
-
         url = (
             "https://www.xiaohongshu.com/explore/"
             + note_id
@@ -608,17 +604,4 @@ class XiaoHongShuClient(AbstractApiClient):
             method="GET", url=url, return_response=True, headers=copy_headers
         )
 
-        def get_note_dict(html):
-            state = re.findall(r"window.__INITIAL_STATE__=({.*})</script>", html)[
-                0
-            ].replace("undefined", '""')
-
-            if state != "{}":
-                note_dict = transform_json_keys(state)
-                return note_dict["note"]["note_detail_map"][note_id]["note"]
-            return {}
-
-        try:
-            return get_note_dict(html)
-        except:
-            return None
+        return self._extractor.extract_note_detail_from_html(note_id, html)

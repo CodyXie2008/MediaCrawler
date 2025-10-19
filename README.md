@@ -1,5 +1,19 @@
 # 🔥 MediaCrawler - 自媒体平台爬虫 🕷️
 
+<div align="center" markdown="1">
+   <sup>Special thanks to:</sup>
+   <br>
+   <br>
+   <a href="https://go.warp.dev/MediaCrawler">
+      <img alt="Warp sponsorship" width="400" src="https://github.com/warpdotdev/brand-assets/blob/main/Github/Sponsor/Warp-Github-LG-02.png?raw=true">
+   </a>
+
+### [Warp is built for coding with multiple AI agents](https://go.warp.dev/MediaCrawler)
+
+
+</div>
+<hr>
+
 <div align="center">
 
 <a href="https://trendshift.io/repositories/8291" target="_blank">
@@ -51,8 +65,6 @@
 | 知乎   | ✅          | ✅              | ✅        | ✅              | ✅          | ✅        | ✅              |
 
 
-<details id="pro-version">
-<summary>🔗 <strong>🚀 MediaCrawlerPro 重磅发布！更多的功能，更好的架构设计！</strong></summary>
 
 ### 🚀 MediaCrawlerPro 重磅发布！
 
@@ -77,7 +89,7 @@
 - [ ] **基于自媒体平台的AI Agent正在开发中 🚀🚀**
 
 点击查看：[MediaCrawlerPro 项目主页](https://github.com/MediaCrawlerPro) 更多介绍
-</details>
+
 
 ## 🚀 快速开始
 
@@ -198,37 +210,97 @@ python main.py --help
 ## 💾 数据保存
 
 支持多种数据存储方式：
-
-- **MySQL 数据库**：支持关系型数据库 MySQL 中保存（需要提前创建数据库）
-  - 执行 `python db.py` 初始化数据库表结构（只在首次执行）
 - **CSV 文件**：支持保存到 CSV 中（`data/` 目录下）
 - **JSON 文件**：支持保存到 JSON 中（`data/` 目录下）
+- **数据库存储**
+  - 使用参数 `--init_db` 进行数据库初始化（使用`--init_db`时不需要携带其他optional）
+  - **SQLite 数据库**：轻量级数据库，无需服务器，适合个人使用（推荐）
+    1. 初始化：`--init_db sqlite`
+    2. 数据存储：`--save_data_option sqlite`
+  - **MySQL 数据库**：支持关系型数据库 MySQL 中保存（需要提前创建数据库）
+    1. 初始化：`--init_db mysql`
+    2. 数据存储：`--save_data_option db`（db 参数为兼容历史更新保留）
 
----
+
+### 使用示例：
+```shell
+# 初始化 SQLite 数据库（使用'--init_db'时不需要携带其他optional）
+uv run main.py --init_db sqlite
+# 使用 SQLite 存储数据（推荐个人用户使用）
+uv run main.py --platform xhs --lt qrcode --type search --save_data_option sqlite
+```
+```shell
+# 初始化 MySQL 数据库
+uv run main.py --init_db mysql
+# 使用 MySQL 存储数据（为适配历史更新，db参数进行沿用）
+uv run main.py --platform xhs --lt qrcode --type search --save_data_option db
+```
+
 
 [🚀 MediaCrawlerPro 重磅发布 🚀！更多的功能，更好的架构设计！](https://github.com/MediaCrawlerPro)
 
-## 🤝 社区与支持
 
 ### 💬 交流群组
 - **微信交流群**：[点击加入](https://nanmicoder.github.io/MediaCrawler/%E5%BE%AE%E4%BF%A1%E4%BA%A4%E6%B5%81%E7%BE%A4.html)
 
-### 📚 文档与教程
-- **在线文档**：[MediaCrawler 完整文档](https://nanmicoder.github.io/MediaCrawler/)
-- **爬虫教程**：[CrawlerTutorial 免费教程](https://github.com/NanmiCoder/CrawlerTutorial)
-  
+### 📚 其他
+- **常见问题**：[MediaCrawler 完整文档](https://nanmicoder.github.io/MediaCrawler/)
+- **爬虫入门教程**：[CrawlerTutorial 免费教程](https://github.com/NanmiCoder/CrawlerTutorial)
+- **新闻爬虫开源项目**：[NewsCrawlerCollection](https://github.com/NanmiCoder/NewsCrawlerCollection)
+---
 
-# 其他常见问题可以查看在线文档
-> 
-> 在线文档包含使用方法、常见问题、加入项目交流群等。
-> [MediaCrawler在线文档](https://nanmicoder.github.io/MediaCrawler/)
-> 
+### 💰 赞助商展示
 
-# 作者提供的知识服务
-> 如果想快速入门和学习该项目的使用、源码架构设计等、学习编程技术、亦或者想了解MediaCrawlerPro的源代码设计可以看下我的知识付费栏目。
+<a href="https://h.wandouip.com">
+<img src="docs/static/images/img_8.jpg">
+<br>
+豌豆HTTP自营千万级IP资源池，IP纯净度≥99.8%，每日保持IP高频更新，快速响应，稳定连接,满足多种业务场景，支持按需定制，注册免费提取10000ip。
+</a>
 
-[作者的知识付费栏目介绍](https://nanmicoder.github.io/MediaCrawler/%E7%9F%A5%E8%AF%86%E4%BB%98%E8%B4%B9%E4%BB%8B%E7%BB%8D.html)
+---
 
+<p align="center">
+  <a href="https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad">
+    <img style="border-radius:20px" width="500" alt="TikHub IO_Banner zh" src="docs/static/images/tikhub_banner_zh.png">
+  </a>
+</p>
+
+[TikHub](https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad) 提供超过 **700 个端点**，可用于从 **14+ 个社交媒体平台** 获取与分析数据 —— 包括视频、用户、评论、商店、商品与趋势等，一站式完成所有数据访问与分析。
+
+通过每日签到，可以获取免费额度。可以使用我的注册链接：[https://user.tikhub.io/users/signup?referral_code=cfzyejV9](https://user.tikhub.io/users/signup?referral_code=cfzyejV9&utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad) 或使用邀请码：`cfzyejV9`，注册并充值即可获得 **$2 免费额度**。
+
+[TikHub](https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad) 提供以下服务：
+
+- 🚀 丰富的社交媒体数据接口（TikTok、Douyin、XHS、YouTube、Instagram等）
+- 💎 每日签到免费领取额度
+- ⚡ 高成功率与高并发支持
+- 🌐 官网：[https://tikhub.io/](https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad)
+- 💻 GitHub地址：[https://github.com/TikHubIO/](https://github.com/TikHubIO/)
+
+---
+<p align="center">
+  <a href="https://app.nstbrowser.io/account/register?utm_source=official&utm_term=mediacrawler">
+    <img style="border-radius:20px"  alt="NstBrowser Banner " src="docs/static/images/nstbrowser.jpg">
+  </a>
+</p>
+
+Nstbrowser 指纹浏览器 — 多账号运营&自动化管理的最佳解决方案
+<br>
+多账号安全管理与会话隔离；指纹定制结合反检测浏览器环境，兼顾真实度与稳定性；覆盖店铺管理、电商监控、社媒营销、广告验证、Web3、投放监控与联盟营销等业务线；提供生产级并发与定制化企业服务；提供可一键部署的云端浏览器方案，配套全球高质量 IP 池，为您构建长期行业竞争力
+<br>
+[点击此处即刻开始免费使用](https://app.nstbrowser.io/account/register?utm_source=official&utm_term=mediacrawler)
+<br>
+使用 NSTBROWSER 可获得 10% 充值赠礼
+
+
+
+### 🤝 成为赞助者
+
+成为赞助者，可以将您的产品展示在这里，每天获得大量曝光！
+
+**联系方式**：
+- 微信：`relakkes`
+- 邮箱：`relakkes@gmail.com`
 
 ---
 
@@ -238,36 +310,6 @@ python main.py --help
 
 [![Star History Chart](https://api.star-history.com/svg?repos=NanmiCoder/MediaCrawler&type=Date)](https://star-history.com/#NanmiCoder/MediaCrawler&Date)
 
-### 💰 赞助商展示
-
-<a href="https://www.swiftproxy.net/?ref=nanmi">
-<img src="docs/static/images/img_5.png">
-<br>
-Swiftproxy - 90M+ 全球高质量纯净住宅IP，注册可领免费 500MB 测试流量，动态流量不过期！
-> 专属折扣码：**GHB5** 立享九折优惠！
-</a>
-
-<br>
-<br>
-
-<a href="https://www.tkyds.com/?=MediaCrawler">
-<img src="docs/static/images/img_6.png">
-<br>
-TK云大师,专业的TikTok矩阵系统,AI赋能自动化,单人轻松管理上万账号！
-</a>
-
-<br>
-<br>
-
-<a href="https://sider.ai/ad-land-redirect?source=github&p1=mi&p2=kk">**Sider** - 全网最火的 ChatGPT 插件，体验拉满！</a>
-
-### 🤝 成为赞助者
-
-成为赞助者，可以将您的产品展示在这里，每天获得大量曝光！
-
-**联系方式**：
-- 微信：`yzglan`
-- 邮箱：`relakkes@gmail.com`
 
 
 ## 📚 参考
@@ -298,14 +340,3 @@ TK云大师,专业的TikTok矩阵系统,AI赋能自动化,单人轻松管理上�
 ## 6. 最终解释权
 关于本项目的最终解释权归开发者所有。开发者保留随时更改或更新本免责声明的权利，恕不另行通知。
 </div>
-
-
-## 🙏 致谢
-
-### JetBrains 开源许可证支持
-
-感谢 JetBrains 为本项目提供免费的开源许可证支持！
-
-<a href="https://www.jetbrains.com/?from=MediaCrawler">
-    <img src="https://www.jetbrains.com/company/brand/img/jetbrains_logo.png" width="100" alt="JetBrains" />
-</a>

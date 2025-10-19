@@ -8,7 +8,6 @@
 # 详细许可条款请参阅项目根目录下的LICENSE文件。
 # 使用本代码即表示您同意遵守上述原则和LICENSE中的所有条款。
 
-
 # -*- coding: utf-8 -*-
 # @Author  : relakkes@gmail.com
 # @Time    : 2024/1/14 19:34
@@ -19,8 +18,8 @@ from typing import List
 import config
 from var import source_keyword_var
 
-from .bilibili_store_impl import *
-from .bilibilli_store_video import *
+from ._store_impl import *
+from .bilibilli_store_media import *
 
 
 class BiliStoreFactory:
@@ -28,15 +27,14 @@ class BiliStoreFactory:
         "csv": BiliCsvStoreImplement,
         "db": BiliDbStoreImplement,
         "json": BiliJsonStoreImplement,
+        "sqlite": BiliSqliteStoreImplement,
     }
 
     @staticmethod
     def create_store() -> AbstractStore:
         store_class = BiliStoreFactory.STORES.get(config.SAVE_DATA_OPTION)
         if not store_class:
-            raise ValueError(
-                "[BiliStoreFactory.create_store] Invalid save option only supported csv or db or json ..."
-            )
+            raise ValueError("[BiliStoreFactory.create_store] Invalid save option only supported csv or db or json or sqlite ...")
         return store_class()
 
 
@@ -67,9 +65,7 @@ async def update_bilibili_video(video_item: Dict):
         "video_cover_url": video_item_view.get("pic", ""),
         "source_keyword": source_keyword_var.get(),
     }
-    utils.logger.info(
-        f"[store.bilibili.update_bilibili_video] bilibili video id:{video_id}, title:{save_content_item.get('title')}"
-    )
+    utils.logger.info(f"[store.bilibili.update_bilibili_video] bilibili video id:{video_id}, title:{save_content_item.get('title')}")
     await BiliStoreFactory.create_store().store_content(content_item=save_content_item)
 
 
@@ -88,9 +84,7 @@ async def update_up_info(video_item: Dict):
         "user_rank": video_item_card.get("level_info").get("current_level"),
         "is_official": video_item_card.get("official_verify").get("type"),
     }
-    utils.logger.info(
-        f"[store.bilibili.update_up_info] bilibili user_id:{video_item_card.get('mid')}"
-    )
+    utils.logger.info(f"[store.bilibili.update_up_info] bilibili user_id:{video_item_card.get('mid')}")
     await BiliStoreFactory.create_store().store_creator(creator=saver_up_info)
 
 
@@ -122,9 +116,7 @@ async def update_bilibili_video_comment(video_id: str, comment_item: Dict):
         "like_count": like_count,
         "last_modify_ts": utils.get_current_timestamp(),
     }
-    utils.logger.info(
-        f"[store.bilibili.update_bilibili_video_comment] Bilibili video comment: {comment_id}, content: {save_comment_item.get('content')}"
-    )
+    utils.logger.info(f"[store.bilibili.update_bilibili_video_comment] Bilibili video comment: {comment_id}, content: {save_comment_item.get('content')}")
     await BiliStoreFactory.create_store().store_comment(comment_item=save_comment_item)
 
 
@@ -136,13 +128,11 @@ async def store_video(aid, video_content, extension_file_name):
         video_content:
         extension_file_name:
     """
-    await BilibiliVideo().store_video(
-        {
-            "aid": aid,
-            "video_content": video_content,
-            "extension_file_name": extension_file_name,
-        }
-    )
+    await BilibiliVideo().store_video({
+        "aid": aid,
+        "video_content": video_content,
+        "extension_file_name": extension_file_name,
+    })
 
 
 async def batch_update_bilibili_creator_fans(creator_info: Dict, fans_list: List[Dict]):
@@ -155,14 +145,10 @@ async def batch_update_bilibili_creator_fans(creator_info: Dict, fans_list: List
             "sign": fan_item.get("sign"),
             "avatar": fan_item.get("face"),
         }
-        await update_bilibili_creator_contact(
-            creator_info=creator_info, fan_info=fan_info
-        )
+        await update_bilibili_creator_contact(creator_info=creator_info, fan_info=fan_info)
 
 
-async def batch_update_bilibili_creator_followings(
-    creator_info: Dict, followings_list: List[Dict]
-):
+async def batch_update_bilibili_creator_followings(creator_info: Dict, followings_list: List[Dict]):
     if not followings_list:
         return
     for following_item in followings_list:
@@ -172,14 +158,10 @@ async def batch_update_bilibili_creator_followings(
             "sign": following_item.get("sign"),
             "avatar": following_item.get("face"),
         }
-        await update_bilibili_creator_contact(
-            creator_info=following_info, fan_info=creator_info
-        )
+        await update_bilibili_creator_contact(creator_info=following_info, fan_info=creator_info)
 
 
-async def batch_update_bilibili_creator_dynamics(
-    creator_info: Dict, dynamics_list: List[Dict]
-):
+async def batch_update_bilibili_creator_dynamics(creator_info: Dict, dynamics_list: List[Dict]):
     if not dynamics_list:
         return
     for dynamic_item in dynamics_list:
@@ -202,9 +184,7 @@ async def batch_update_bilibili_creator_dynamics(
             "total_forwards": dynamic_forward,
             "total_liked": dynamic_like,
         }
-        await update_bilibili_creator_dynamic(
-            creator_info=creator_info, dynamic_info=dynamic_info
-        )
+        await update_bilibili_creator_dynamic(creator_info=creator_info, dynamic_info=dynamic_info)
 
 
 async def update_bilibili_creator_contact(creator_info: Dict, fan_info: Dict):

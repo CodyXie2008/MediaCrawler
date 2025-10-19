@@ -1,21 +1,20 @@
-# 声明：本代码仅供学习和研究目的使用。使用者应遵守以下原则：  
-# 1. 不得用于任何商业用途。  
-# 2. 使用时应遵守目标平台的使用条款和robots.txt规则。  
-# 3. 不得进行大规模爬取或对平台造成运营干扰。  
-# 4. 应合理控制请求频率，避免给目标平台带来不必要的负担。   
+# 声明：本代码仅供学习和研究目的使用。使用者应遵守以下原则：
+# 1. 不得用于任何商业用途。
+# 2. 使用时应遵守目标平台的使用条款和robots.txt规则。
+# 3. 不得进行大规模爬取或对平台造成运营干扰。
+# 4. 应合理控制请求频率，避免给目标平台带来不必要的负担。
 # 5. 不得用于任何非法或不当的用途。
-#   
-# 详细许可条款请参阅项目根目录下的LICENSE文件。  
-# 使用本代码即表示您同意遵守上述原则和LICENSE中的所有条款。  
-
+#
+# 详细许可条款请参阅项目根目录下的LICENSE文件。
+# 使用本代码即表示您同意遵守上述原则和LICENSE中的所有条款。
 
 import asyncio
 import copy
 import json
 import urllib.parse
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Union, Optional
 
-import requests
+import httpx
 from playwright.async_api import BrowserContext
 
 from base.base_crawler import AbstractApiClient
@@ -27,17 +26,18 @@ from .field import *
 from .help import *
 
 
-class DOUYINClient(AbstractApiClient):
+class DouYinClient(AbstractApiClient):
+
     def __init__(
-            self,
-            timeout=30,
-            proxies=None,
-            *,
-            headers: Dict,
-            playwright_page: Optional[Page],
-            cookie_dict: Dict
+        self,
+        timeout=60,  # 若开启爬取媒体选项，抖音的短视频需要更久的超时时间
+        proxy=None,
+        *,
+        headers: Dict,
+        playwright_page: Optional[Page],
+        cookie_dict: Dict,
     ):
-        self.proxies = proxies
+        self.proxy = proxy
         self.timeout = timeout
         self.headers = headers
         self._host = "https://www.douyin.com"
@@ -45,8 +45,11 @@ class DOUYINClient(AbstractApiClient):
         self.cookie_dict = cookie_dict
 
     async def __process_req_params(
-            self, uri: str, params: Optional[Dict] = None, headers: Optional[Dict] = None,
-            request_method="GET"
+        self,
+        uri: str,
+        params: Optional[Dict] = None,
+        headers: Optional[Dict] = None,
+        request_method="GET",
     ):
 
         if not params:
@@ -92,14 +95,8 @@ class DOUYINClient(AbstractApiClient):
         params["a_bogus"] = a_bogus
 
     async def request(self, method, url, **kwargs):
-        response = None
-        # 只在 self.proxies 为 dict 且有内容时才传递
-        if isinstance(self.proxies, dict) and self.proxies:
-            kwargs['proxies'] = self.proxies
-        if method == "GET":
-            response = requests.request(method, url, **kwargs)
-        elif method == "POST":
-            response = requests.request(method, url, **kwargs)
+        async with httpx.AsyncClient(proxy=self.proxy) as client:
+            response = await client.request(method, url, timeout=self.timeout, **kwargs)
         try:
             if response.text == "" or response.text == "blocked":
                 utils.logger.error(f"request params incrr, response.text: {response.text}")
@@ -135,13 +132,13 @@ class DOUYINClient(AbstractApiClient):
         self.cookie_dict = cookie_dict
 
     async def search_info_by_keyword(
-            self,
-            keyword: str,
-            offset: int = 0,
-            search_channel: SearchChannelType = SearchChannelType.GENERAL,
-            sort_type: SearchSortType = SearchSortType.GENERAL,
-            publish_time: PublishTimeType = PublishTimeType.UNLIMITED,
-            search_id: str = ""
+        self,
+        keyword: str,
+        offset: int = 0,
+        search_channel: SearchChannelType = SearchChannelType.GENERAL,
+        sort_type: SearchSortType = SearchSortType.GENERAL,
+        publish_time: PublishTimeType = PublishTimeType.UNLIMITED,
+        search_id: str = "",
     ):
         """
         DouYin Web Search API
@@ -168,10 +165,7 @@ class DOUYINClient(AbstractApiClient):
             'search_id': search_id,
         }
         if sort_type.value != SearchSortType.GENERAL.value or publish_time.value != PublishTimeType.UNLIMITED.value:
-            query_params["filter_selected"] = json.dumps({
-                "sort_type": str(sort_type.value),
-                "publish_time": str(publish_time.value)
-            })
+            query_params["filter_selected"] = json.dumps({"sort_type": str(sort_type.value), "publish_time": str(publish_time.value)})
             query_params["is_filter_search"] = 1
             query_params["search_source"] = "tab_search"
         referer_url = f"https://www.douyin.com/search/{keyword}?aid=f594bbd9-a0e2-4651-9319-ebe3cb6298c1&type=general"
@@ -185,9 +179,7 @@ class DOUYINClient(AbstractApiClient):
         :param aweme_id:
         :return:
         """
-        params = {
-            "aweme_id": aweme_id
-        }
+        params = {"aweme_id": aweme_id}
         headers = copy.copy(self.headers)
         del headers["Origin"]
         res = await self.get("/aweme/v1/web/aweme/detail/", params, headers)
@@ -198,19 +190,14 @@ class DOUYINClient(AbstractApiClient):
 
         """
         uri = "/aweme/v1/web/comment/list/"
-        params = {
-            "aweme_id": aweme_id,
-            "cursor": cursor,
-            "count": 20,
-            "item_type": 0
-        }
+        params = {"aweme_id": aweme_id, "cursor": cursor, "count": 20, "item_type": 0}
         keywords = request_keyword_var.get()
         referer_url = "https://www.douyin.com/search/" + keywords + '?aid=3a3cec5a-9e27-4040-b6aa-ef548c2c1138&publish_time=0&sort_type=0&source=search_history&type=general'
         headers = copy.copy(self.headers)
         headers["Referer"] = urllib.parse.quote(referer_url, safe=':/')
         return await self.get(uri, params)
 
-    async def get_sub_comments(self, comment_id: str, cursor: int = 0):
+    async def get_sub_comments(self, aweme_id: str, comment_id: str, cursor: int = 0):
         """
             获取子评论
         """
@@ -220,6 +207,7 @@ class DOUYINClient(AbstractApiClient):
             "cursor": cursor,
             "count": 20,
             "item_type": 0,
+            "item_id": aweme_id,
         }
         keywords = request_keyword_var.get()
         referer_url = "https://www.douyin.com/search/" + keywords + '?aid=3a3cec5a-9e27-4040-b6aa-ef548c2c1138&publish_time=0&sort_type=0&source=search_history&type=general'
@@ -228,12 +216,12 @@ class DOUYINClient(AbstractApiClient):
         return await self.get(uri, params)
 
     async def get_aweme_all_comments(
-            self,
-            aweme_id: str,
-            crawl_interval: float = 1.0,
-            is_fetch_sub_comments=False,
-            callback: Optional[Callable] = None,
-            max_count: int = 10,
+        self,
+        aweme_id: str,
+        crawl_interval: float = 1.0,
+        is_fetch_sub_comments=False,
+        callback: Optional[Callable] = None,
+        max_count: int = 10,
     ):
         """
         获取帖子的所有评论，包括子评论
@@ -273,7 +261,7 @@ class DOUYINClient(AbstractApiClient):
                     sub_comments_cursor = 0
 
                     while sub_comments_has_more:
-                        sub_comments_res = await self.get_sub_comments(comment_id, sub_comments_cursor)
+                        sub_comments_res = await self.get_sub_comments(aweme_id, comment_id, sub_comments_cursor)
                         sub_comments_has_more = sub_comments_res.get("has_more", 0)
                         sub_comments_cursor = sub_comments_res.get("cursor", 0)
                         sub_comments = sub_comments_res.get("comments", [])
@@ -317,9 +305,47 @@ class DOUYINClient(AbstractApiClient):
             posts_has_more = aweme_post_res.get("has_more", 0)
             max_cursor = aweme_post_res.get("max_cursor")
             aweme_list = aweme_post_res.get("aweme_list") if aweme_post_res.get("aweme_list") else []
-            utils.logger.info(
-                f"[DOUYINClient.get_all_user_aweme_posts] got sec_user_id:{sec_user_id} video len : {len(aweme_list)}")
+            utils.logger.info(f"[DouYinClient.get_all_user_aweme_posts] get sec_user_id:{sec_user_id} video len : {len(aweme_list)}")
             if callback:
                 await callback(aweme_list)
             result.extend(aweme_list)
         return result
+
+    async def get_aweme_media(self, url: str) -> Union[bytes, None]:
+        async with httpx.AsyncClient(proxy=self.proxy) as client:
+            try:
+                response = await client.request("GET", url, timeout=self.timeout, follow_redirects=True)
+                response.raise_for_status()
+                if not response.reason_phrase == "OK":
+                    utils.logger.error(f"[DouYinClient.get_aweme_media] request {url} err, res:{response.text}")
+                    return None
+                else:
+                    return response.content
+            except httpx.HTTPError as exc:  # some wrong when call httpx.request method, such as connection error, client error, server error or response status code is not 2xx
+                utils.logger.error(f"[DouYinClient.get_aweme_media] {exc.__class__.__name__} for {exc.request.url} - {exc}")  # 保留原始异常类型名称，以便开发者调试
+                return None
+
+    async def resolve_short_url(self, short_url: str) -> str:
+        """
+        解析抖音短链接,获取重定向后的真实URL
+        Args:
+            short_url: 短链接,如 https://v.douyin.com/iF12345ABC/
+        Returns:
+            重定向后的完整URL
+        """
+        async with httpx.AsyncClient(proxy=self.proxy, follow_redirects=False) as client:
+            try:
+                utils.logger.info(f"[DouYinClient.resolve_short_url] Resolving short URL: {short_url}")
+                response = await client.get(short_url, timeout=10)
+
+                # 短链接通常返回302重定向
+                if response.status_code in [301, 302, 303, 307, 308]:
+                    redirect_url = response.headers.get("Location", "")
+                    utils.logger.info(f"[DouYinClient.resolve_short_url] Resolved to: {redirect_url}")
+                    return redirect_url
+                else:
+                    utils.logger.warning(f"[DouYinClient.resolve_short_url] Unexpected status code: {response.status_code}")
+                    return ""
+            except Exception as e:
+                utils.logger.error(f"[DouYinClient.resolve_short_url] Failed to resolve short URL: {e}")
+                return ""
